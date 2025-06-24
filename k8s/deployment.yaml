@@ -1,0 +1,71 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bet-profile-deployment
+  namespace: bet-profile-ns
+  labels:
+    app: bet-profile
+    deployType: live
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: bet-profile
+  template:
+    metadata:
+      labels:
+        app: bet-profile
+        deployType: live
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: topology.kubernetes.io/zone
+                operator: In
+                values:
+                - ap-northeast-2a
+                - ap-northeast-2b
+                - ap-northeast-2c
+                - ap-northeast-2d
+      containers:
+      - name: bet-profile-app
+        image: imeansu/bet-profile:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 4000
+        resources:
+          requests:
+            cpu: "250m"
+            memory: "256Mi"
+          limits:
+            cpu: "500m"
+            memory: "512Mi"
+        env:
+        - name: NODE_ENV
+          value: "production"
+        - name: PORT
+          value: "5000"
+        - name: OPENAI_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: bet-profile-api-keys
+              key: OPENAI_API_KEY
+        - name: BFL_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: bet-profile-api-keys
+              key: BFL_API_KEY
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 4000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 4000
+          initialDelaySeconds: 5
+          periodSeconds: 5 
