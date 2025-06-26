@@ -25,6 +25,7 @@ function Page() {
   const [isDetailedInterpretationExpanded, setIsDetailedInterpretationExpanded] = useState(false);
   const [generatedBackgrounds, setGeneratedBackgrounds] = useState(null);
   const [isGeneratingBackgrounds, setIsGeneratingBackgrounds] = useState(false);
+  const [backgroundGenerationStep, setBackgroundGenerationStep] = useState('');
 
   // 결과 화면 캡쳐를 위한 ref
   const resultRef = useRef(null);
@@ -594,33 +595,68 @@ function Page() {
     }
   };
 
-  // 배경 이미지 생성 함수
+  // 배경 이미지 생성 함수 (2단계 프로세스)
   const generateBackgrounds = async (profileAnalysisData, chugumiSummary) => {
     setIsGeneratingBackgrounds(true);
     setGeneratedBackgrounds(null);
+    setBackgroundGenerationStep('prompts');
     
     try {
+      // 1단계: 배경 프롬프트 생성
+      console.log('🎨 1단계: 배경 프롬프트 생성 시작');
+      
       const formData = new FormData();
       formData.append('profileAnalysis', JSON.stringify(profileAnalysisData));
       formData.append('chugumiSummary', chugumiSummary || '독특한 개성을 가진 감성적인 스타일');
+      
+      // 프로필 사진 파일 추가
+      if (profileFile) {
+        formData.append('profile', profileFile);
+      }
 
-      const response = await fetch('http://localhost:4000/generate-backgrounds', {
+      const promptResponse = await fetch('http://localhost:4000/generate-background-prompts', {
         method: 'POST',
         body: formData,
       });
 
-      if (!response.ok) {
+      if (!promptResponse.ok) {
+        throw new Error('배경 프롬프트 생성 요청 실패');
+      }
+
+      const promptResult = await promptResponse.json();
+      console.log('✅ 1단계 완료: 프롬프트 생성됨');
+      setBackgroundGenerationStep('images');
+      
+      // 2단계: 이미지 생성
+      console.log('🖼️ 2단계: 이미지 생성 시작');
+      
+      const imageResponse = await fetch('http://localhost:4000/generate-backgrounds', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          realisticPrompt: promptResult.prompts.realistic_prompt,
+          artisticPrompt: promptResult.prompts.artistic_prompt
+        })
+      });
+
+      if (!imageResponse.ok) {
         throw new Error('배경 이미지 생성 요청 실패');
       }
 
-      const result = await response.json();
-      setGeneratedBackgrounds(result.backgrounds);
+      const imageResult = await imageResponse.json();
+      console.log('✅ 2단계 완료: 이미지 생성됨');
+      
+      // 기존 형식에 맞게 데이터 변환 (backgrounds -> images)
+      setGeneratedBackgrounds(imageResult.images);
       
     } catch (error) {
       console.error('배경 이미지 생성 오류:', error);
       // 실패해도 에러 메시지만 로그, 사용자에게는 알리지 않음
     } finally {
       setIsGeneratingBackgrounds(false);
+      setBackgroundGenerationStep('');
     }
   };
 
@@ -1382,8 +1418,52 @@ function Page() {
                 {/* 로딩 상태 */}
                 {isGeneratingBackgrounds && (
                   <div className="text-center py-8">
-                    <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500 mb-4"></div>
-                    <p className="text-gray-600 mb-4">AI가 당신만의 배경을 만들고 있어요...</p>
+                    <div className="flex justify-center items-center space-x-2 mb-6">
+                      {/* 1단계 표시 */}
+                      <div className={`flex items-center space-x-2 px-4 py-2 rounded-full ${
+                        backgroundGenerationStep === 'prompts' 
+                          ? 'bg-purple-100 text-purple-700' 
+                          : 'bg-green-100 text-green-700'
+                      }`}>
+                        {backgroundGenerationStep === 'prompts' ? (
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-purple-500"></div>
+                        ) : (
+                          <span className="text-green-500">✓</span>
+                        )}
+                        <span className="text-sm font-medium">프롬프트 생성</span>
+                      </div>
+                      
+                      <div className="w-8 h-px bg-gray-300"></div>
+                      
+                      {/* 2단계 표시 */}
+                      <div className={`flex items-center space-x-2 px-4 py-2 rounded-full ${
+                        backgroundGenerationStep === 'images' 
+                          ? 'bg-purple-100 text-purple-700' 
+                          : 'bg-gray-100 text-gray-500'
+                      }`}>
+                        {backgroundGenerationStep === 'images' ? (
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-purple-500"></div>
+                        ) : (
+                          <span className="text-gray-400">○</span>
+                        )}
+                        <span className="text-sm font-medium">이미지 생성</span>
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <p className="text-gray-800 font-medium">
+                        {backgroundGenerationStep === 'prompts' 
+                          ? '🎨 AI가 당신의 스타일을 분석하고 있어요...' 
+                          : '🖼️ 맞춤 배경 이미지를 생성하고 있어요...'
+                        }
+                      </p>
+                      <p className="text-sm text-gray-500">
+                        {backgroundGenerationStep === 'prompts' 
+                          ? '프로필 사진과 추구미를 바탕으로 완벽한 배경을 기획 중입니다' 
+                          : 'DALL-E 3로 고품질 배경 이미지를 만들고 있습니다'
+                        }
+                      </p>
+                    </div>
                   </div>
                 )}
 
