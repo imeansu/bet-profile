@@ -1168,74 +1168,159 @@ function Page() {
 
         {/* Step 6: 프로필 분석 결과 */}
         {step === 6 && profileAnalysis && (
-          <div className="min-h-screen bg-gradient-to-br from-purple-50 to-pink-50">
+          <div className="min-h-screen bg-gray-100">
             {/* 헤더 */}
-            <div className="flex items-center justify-between p-4 bg-white border-b border-gray-200">
+            <div className="flex items-center justify-between p-4 bg-white">
               <button 
                 onClick={() => setStep(4)}
                 className="p-2 hover:bg-gray-100 rounded-full transition-colors"
               >
                 <ArrowLeft className="w-6 h-6 text-gray-600" />
               </button>
-              <h1 className="text-lg font-semibold text-gray-800">프로필 분석 결과</h1>
+              <h1 className="text-lg font-semibold text-gray-800">프사 리포트 도착</h1>
               <div className="w-10"></div>
             </div>
 
-            <div className="p-6 space-y-6">
-              {/* 메인 제목과 거리 */}
-              <div className="text-center space-y-4">
-                <div className="text-4xl mb-2">
-                  {profileAnalysis.distance_to_chugumi <= 10 ? '💯' : 
-                   profileAnalysis.distance_to_chugumi <= 20 ? '😊' : 
-                   profileAnalysis.distance_to_chugumi <= 30 ? '😐' : '🤔'}
+            <div className="p-4 space-y-6">
+              {/* 프로필 이미지와 거리 표시 */}
+              <div className="bg-white rounded-2xl p-6 text-center space-y-4">
+                {/* 프로필 이미지 */}
+                <div className="flex justify-center">
+                  <div className="w-20 h-20 rounded-2xl overflow-hidden border-4 border-gray-200">
+                    {profileFile && (
+                      <img 
+                        src={URL.createObjectURL(profileFile)}
+                        alt="프로필 미리보기"
+                        className="w-full h-full object-cover"
+                      />
+                    )}
+                  </div>
                 </div>
-                <h2 className="text-2xl font-bold text-gray-800">
-                  우리 사이 거리는 <span className="text-purple-600">{profileAnalysis.distance_to_chugumi}m</span> 🚶
-                </h2>
-                <p className="text-gray-600">
-                  {profileAnalysis.distance_evaluation}
-                </p>
+
+                {/* 거리 메시지 */}
+                <div className="space-y-2">
+                  <h2 className="text-xl font-bold text-gray-800">
+                    추구미까지 {profileAnalysis.distance_to_chugumi}m 남았어요
+                  </h2>
+                  
+                  {/* 거리 표시 바 */}
+                  <div className="flex items-center space-x-3">
+                    <div className="text-sm">🚶</div>
+                    <div className="flex-1 bg-gray-200 rounded-full h-2">
+                      <div 
+                        className="bg-gradient-to-r from-blue-400 to-purple-500 h-2 rounded-full"
+                        style={{width: `${Math.max(10, 100 - (profileAnalysis.distance_to_chugumi * 2))}%`}}
+                      ></div>
+                    </div>
+                    <div className="text-sm">🏠</div>
+                  </div>
+                  
+                  {/* 거리 라벨 */}
+                  <div className="bg-purple-100 rounded-full px-4 py-2 inline-block">
+                    <span className="text-sm font-medium text-purple-700">
+                      ({profileAnalysis.distance_to_chugumi}m)
+                    </span>
+                  </div>
+                  
+                  {/* 위치 설명 */}
+                  <div className="bg-purple-50 rounded-lg p-3 mt-3">
+                    <span className="text-sm text-purple-800 font-medium">
+                      {profileAnalysis.distance_evaluation}
+                    </span>
+                  </div>
+                </div>
               </div>
 
-              {/* AI 총평 */}
-              <div className="bg-white rounded-2xl p-6 shadow-sm">
-                <h3 className="text-lg font-semibold text-gray-800 mb-3 flex items-center">
-                  <Sparkles className="w-5 h-5 mr-2 text-purple-500" />
-                  AI 총평
-                </h3>
-                <p className="text-gray-700 leading-relaxed">
-                  {profileAnalysis.ai_comment}
-                </p>
+              {/* 이 사람의 추구미는... */}
+              <div className="space-y-3">
+                <h3 className="text-lg font-semibold text-gray-800">이 사람의 추구미는...</h3>
+                <div className="bg-white rounded-2xl p-4 flex items-center space-x-4">
+                  <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
+                    <div className="text-lg">🏙️</div>
+                  </div>
+                  <div className="flex-1">
+                    <h4 className="font-semibold text-gray-800 mb-1">
+                      조용한 온기를 가진 도시형 감성
+                    </h4>
+                    <p className="text-sm text-gray-600">
+                      {profileAnalysis.chugumi_summary}
+                    </p>
+                  </div>
+                </div>
               </div>
 
-              {/* 추구미 요약 */}
-              <div className="bg-white rounded-2xl p-6 shadow-sm">
-                <h3 className="text-lg font-semibold text-gray-800">🎯 내 추구미</h3>
-                <p className="text-gray-700 leading-relaxed">
-                  {profileAnalysis.chugumi_summary}
-                </p>
+              {/* 지금 이 프사는... */}
+              <div className="space-y-3">
+                <h3 className="text-lg font-semibold text-gray-800">지금 이 프사는...</h3>
+                <div className="grid grid-cols-2 gap-3">
+                  {/* 조명 */}
+                  <div className="bg-orange-50 rounded-2xl p-4">
+                    <div className="flex items-center space-x-2 mb-2">
+                      <div className="text-lg">💡</div>
+                      <span className="font-semibold text-orange-800">조명</span>
+                    </div>
+                    <p className="text-sm text-orange-700">
+                      어두운 조명 속 포인트 조명 → 무채색+빛 번짐 → 차분하고 몽환적인 무드
+                    </p>
+                  </div>
+
+                  {/* 의상톤 */}
+                  <div className="bg-teal-50 rounded-2xl p-4">
+                    <div className="flex items-center space-x-2 mb-2">
+                      <div className="text-lg">👔</div>
+                      <span className="font-semibold text-teal-800">의상톤</span>
+                    </div>
+                    <p className="text-sm text-teal-700">
+                      딥한 색깔 & 뉴트럴 컬러 → 정제되고 차분함
+                    </p>
+                  </div>
+
+                  {/* 표정 */}
+                  <div className="bg-yellow-50 rounded-2xl p-4">
+                    <div className="flex items-center space-x-2 mb-2">
+                      <div className="text-lg">😊</div>
+                      <span className="font-semibold text-yellow-800">표정</span>
+                    </div>
+                    <p className="text-sm text-yellow-700">
+                      두 사람 다 자연스러운 미소 → 꾸안꾸, 전체적 편안함
+                    </p>
+                  </div>
+
+                  {/* 배경연출 */}
+                  <div className="bg-pink-50 rounded-2xl p-4">
+                    <div className="flex items-center space-x-2 mb-2">
+                      <div className="text-lg">🎭</div>
+                      <span className="font-semibold text-pink-800">배경연출</span>
+                    </div>
+                    <p className="text-sm text-pink-700">
+                      트레이드된 느낌 + 초록식물 + 색감 톤온톤 배경 → 비현실성
+                    </p>
+                  </div>
+                </div>
               </div>
 
-              {/* 현재 프로필 분석 */}
-              <div className="bg-white rounded-2xl p-6 shadow-sm">
-                <h3 className="text-lg font-semibold text-gray-800 mb-3">📸 현재 프사 분석</h3>
-                <p className="text-gray-700 leading-relaxed">
-                  {profileAnalysis.current_profile_analysis}
+              {/* AI 한마디 */}
+              <div className="bg-gradient-to-r from-purple-500 to-pink-500 rounded-2xl p-6 text-white text-center">
+                <div className="text-2xl mb-2">✨</div>
+                <p className="text-lg font-medium">
+                  "{profileAnalysis.ai_comment}"
                 </p>
               </div>
 
               {/* 세부 피드백 */}
-              <div className="bg-white rounded-2xl p-6 shadow-sm">
-                <h3 className="text-lg font-semibold text-gray-800 mb-4">💡 개선 포인트</h3>
-                <div className="space-y-3">
-                  {profileAnalysis.detailed_feedback?.map((feedback, index) => (
-                    <div key={index} className="flex items-start space-x-3">
-                      <div className="w-2 h-2 bg-purple-400 rounded-full mt-2 flex-shrink-0"></div>
-                      <p className="text-gray-700">{feedback}</p>
-                    </div>
-                  ))}
+              {profileAnalysis.detailed_feedback && (
+                <div className="bg-white rounded-2xl p-6 shadow-sm">
+                  <h3 className="text-lg font-semibold text-gray-800 mb-4">💡 개선 포인트</h3>
+                  <div className="space-y-3">
+                    {profileAnalysis.detailed_feedback.map((feedback, index) => (
+                      <div key={index} className="flex items-start space-x-3">
+                        <div className="w-2 h-2 bg-purple-400 rounded-full mt-2 flex-shrink-0"></div>
+                        <p className="text-gray-700">{feedback}</p>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
 
               {/* 추천 배경 */}
               {profileAnalysis.recommended_backgrounds && (
