@@ -660,6 +660,177 @@ function Page() {
     }
   };
 
+  const handleShare = async () => {
+    let buttons = null;
+    let tempStylesheet = null;
+    try {
+      if (!resultRef.current) {
+        alert('캡쳐할 화면을 찾을 수 없습니다.');
+        return;
+      }
+
+      // 버튼들을 임시로 숨기기
+      buttons = resultRef.current.querySelectorAll('.action-buttons');
+      buttons.forEach(btn => btn.style.display = 'none');
+
+      // oklch 색상 문제 해결을 위한 임시 스타일시트 생성
+      tempStylesheet = document.createElement('style');
+      tempStylesheet.textContent = `
+        /* html2canvas용 포괄적 색상 오버라이드 */
+        * {
+          color: inherit !important;
+          background-color: inherit !important;
+          border-color: inherit !important;
+        }
+        
+        /* 배경 색상 */
+        .bg-gradient-to-r { background: linear-gradient(to right, #8b5cf6, #ec4899) !important; }
+        .bg-gradient-to-br { background: linear-gradient(to bottom right, #faf5ff, #fdf2f8, #eff6ff) !important; }
+        .from-purple-50 { background: #faf5ff !important; }
+        .via-pink-50 { background: #fdf2f8 !important; }
+        .to-blue-50 { background: #eff6ff !important; }
+        .from-purple-500 { background: #8b5cf6 !important; }
+        .to-pink-500 { background: #ec4899 !important; }
+        .from-purple-600 { background: #7c3aed !important; }
+        .to-pink-600 { background: #db2777 !important; }
+        .from-blue-500 { background: #3b82f6 !important; }
+        .to-cyan-500 { background: #06b6d4 !important; }
+        .from-blue-600 { background: #2563eb !important; }
+        .to-cyan-600 { background: #0891b2 !important; }
+        .from-green-500 { background: #10b981 !important; }
+        .to-emerald-500 { background: #059669 !important; }
+        .from-green-600 { background: #059669 !important; }
+        .to-emerald-600 { background: #047857 !important; }
+        .bg-purple-50 { background: #faf5ff !important; }
+        .bg-pink-50 { background: #fdf2f8 !important; }
+        .bg-blue-50 { background: #eff6ff !important; }
+        .bg-gray-50 { background: #f9fafb !important; }
+        .bg-gray-100 { background: #f3f4f6 !important; }
+        .bg-gray-200 { background: #e5e7eb !important; }
+        .bg-white { background: #ffffff !important; }
+        .bg-green-100 { background: #dcfce7 !important; }
+        .bg-orange-100 { background: #fed7aa !important; }
+        .bg-red-100 { background: #fee2e2 !important; }
+        .bg-blue-100 { background: #dbeafe !important; }
+        
+        /* 텍스트 색상 */
+        .text-gray-800 { color: #1f2937 !important; }
+        .text-gray-700 { color: #374151 !important; }
+        .text-gray-600 { color: #4b5563 !important; }
+        .text-gray-500 { color: #6b7280 !important; }
+        .text-purple-600 { color: #9333ea !important; }
+        .text-pink-600 { color: #db2777 !important; }
+        .text-blue-600 { color: #2563eb !important; }
+        .text-white { color: #ffffff !important; }
+        .text-green-800 { color: #166534 !important; }
+        .text-green-700 { color: #15803d !important; }
+        .text-orange-800 { color: #9a3412 !important; }
+        .text-orange-700 { color: #c2410c !important; }
+        .text-red-800 { color: #991b1b !important; }
+        .text-red-700 { color: #b91c1c !important; }
+        .text-blue-800 { color: #1e40af !important; }
+        .text-blue-700 { color: #1d4ed8 !important; }
+        
+        /* 테두리 색상 */
+        .border-gray-200 { border-color: #e5e7eb !important; }
+        .border-gray-300 { border-color: #d1d5db !important; }
+        .border { border-width: 1px !important; border-style: solid !important; }
+        
+        /* hover 효과 제거 (캡쳐 시에는 불필요) */
+        .hover\\:bg-gray-100:hover { background: #f3f4f6 !important; }
+        .hover\\:from-purple-600:hover { background: #7c3aed !important; }
+        .hover\\:to-pink-600:hover { background: #db2777 !important; }
+        .hover\\:from-blue-600:hover { background: #2563eb !important; }
+        .hover\\:to-cyan-600:hover { background: #0891b2 !important; }
+        .hover\\:from-green-600:hover { background: #059669 !important; }
+        .hover\\:to-emerald-600:hover { background: #047857 !important; }
+      `;
+      document.head.appendChild(tempStylesheet);
+
+      // 잠시 기다린 후 캡쳐 (DOM 업데이트 대기)
+      await new Promise(resolve => setTimeout(resolve, 200));
+
+      // html2canvas로 화면 캡쳐
+      const canvas = await html2canvas(resultRef.current, {
+        backgroundColor: '#f9fafb', // oklch 대신 일반 색상 사용
+        scale: 2, // 고화질
+        useCORS: true,
+        allowTaint: true,
+        logging: false, // 로깅 비활성화
+        width: resultRef.current.scrollWidth,
+        height: resultRef.current.scrollHeight,
+        removeContainer: true, // 임시 컨테이너 제거
+        foreignObjectRendering: false, // SVG 렌더링 비활성화
+        ignoreElements: (element) => {
+          // 문제가 될 수 있는 요소들 무시
+          return element.classList && element.classList.contains('action-buttons');
+        },
+        onclone: (clonedDoc) => {
+          // 클론된 문서에서 추가 스타일 정리
+          const clonedButtons = clonedDoc.querySelectorAll('.action-buttons');
+          clonedButtons.forEach(btn => btn.style.display = 'none');
+          
+          // 클론된 문서에도 안전한 색상 스타일 적용
+          const clonedStyle = clonedDoc.createElement('style');
+          clonedStyle.textContent = tempStylesheet.textContent;
+          clonedDoc.head.appendChild(clonedStyle);
+          
+          // 모든 oklch 색상을 강제로 제거
+          const allElements = clonedDoc.querySelectorAll('*');
+          allElements.forEach(el => {
+            const computedStyle = window.getComputedStyle(el);
+            if (computedStyle.backgroundColor && computedStyle.backgroundColor.includes('oklch')) {
+              el.style.backgroundColor = '#ffffff';
+            }
+            if (computedStyle.color && computedStyle.color.includes('oklch')) {
+              el.style.color = '#000000';
+            }
+            if (computedStyle.borderColor && computedStyle.borderColor.includes('oklch')) {
+              el.style.borderColor = '#e5e7eb';
+            }
+          });
+        }
+      });
+
+      if (!canvas) {
+        throw new Error('캔버스 생성에 실패했습니다.');
+      }
+
+      // Canvas를 Blob으로 변환
+      canvas.toBlob(async (blob) => {
+        if (navigator.share && navigator.canShare) {
+          // Web Share API 사용 (모바일/최신 브라우저)
+          try {
+            const file = new File([blob], 'my-chuguemi-result.png', { type: 'image/png' });
+            await navigator.share({
+              title: '내 추구미 분석 결과',
+              text: 'AI가 분석한 내 추구미 결과를 확인해보세요!',
+              files: [file]
+            });
+          } catch (shareError) {
+            console.log('Web Share API 실패, 클립보드로 복사 시도');
+            await copyImageToClipboard(blob);
+          }
+        } else {
+          // Web Share API 미지원시 클립보드 복사
+          await copyImageToClipboard(blob);
+        }
+      }, 'image/png');
+
+    } catch (error) {
+      console.error('공유 중 오류:', error);
+      alert('결과 공유 중 오류가 발생했습니다.');
+    } finally {
+      // 오류 발생 여부와 상관없이 정리
+      if (buttons) {
+        buttons.forEach(btn => btn.style.display = '');
+      }
+      if (tempStylesheet) {
+        document.head.removeChild(tempStylesheet);
+      }
+    }
+  };
+
   return (
     <div className="min-h-screen bg-white">
       {/* Header */}
@@ -1204,7 +1375,7 @@ function Page() {
               <div className="w-10"></div>
             </div>
 
-            <div className="p-4 space-y-6">
+            <div ref={resultRef} className="p-4 space-y-6">
               {/* 프로필 이미지와 거리 표시 */}
               <div className="bg-white rounded-2xl p-6 text-center space-y-4">
                 {/* 프로필 이미지 */}
@@ -1454,7 +1625,7 @@ function Page() {
                       <p className="text-gray-800 font-medium">
                         {backgroundGenerationStep === 'prompts' 
                           ? '🎨 AI가 당신의 스타일을 분석하고 있어요...' 
-                          : '🖼️ 맞춤 배경 이미지를 생성하고 있어요...'
+                          : '🖼️ 맞춤 배경 이미지를 생성하고 있습니다'
                         }
                       </p>
                       <p className="text-sm text-gray-500">
@@ -1566,8 +1737,7 @@ function Page() {
                         setProfileFile(null);
                         setProfileAnalysis(null);
                       } else if (button.action === 'share') {
-                        // 공유 기능 구현
-                        alert('공유 기능은 곧 추가될 예정입니다!');
+                        handleShare();
                       }
                     }}
                     className={`w-full font-bold py-4 px-6 rounded-2xl text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 ${
