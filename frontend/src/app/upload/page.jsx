@@ -36,11 +36,11 @@ function Page() {
     { text: "독창성 99% 확인됨!", emoji: "🚀" }
   ];
 
-  useEffect(() => {
-    if (profileFiles.length > 0) {
-      analyzeProfile();
-    }
-  }, [profileFiles]);
+  // useEffect(() => {
+  //   if (profileFiles.length > 0) {
+  //     analyzeProfile();
+  //   }
+  // }, [profileFiles]);
 
   useEffect(() => {
     let interval;
@@ -126,11 +126,13 @@ function Page() {
   };
 
   const handleProfileUpload = (e) => {
-    const files = Array.from(e.target.files);
-    const urls = files.map(file => URL.createObjectURL(file));
-    setProfileImages(urls);
-    setProfileFiles(files);
-    setStep(4);
+    const files = Array.from(e.target.files).slice(0, 1); // 최대 1장만
+    if (files.length > 0) {
+      const urls = files.map(file => URL.createObjectURL(file));
+      setProfileImages(urls);
+      setProfileFiles(files);
+      // 바로 다음 단계로 넘어가지 않고 미리보기만 표시
+    }
   };
 
   const generateEditedImage = async () => {
@@ -313,7 +315,7 @@ function Page() {
               
               {/* 분석 시작 버튼 */}
               {aspirationImages.length > 0 && (
-                <button
+                <button 
                   onClick={() => {
                     setStep(2);
                     analyzeAspiration(aspirationFiles[0]);
@@ -517,27 +519,157 @@ function Page() {
         )}
 
         {/* Step 4: 프로필 사진 업로드 */}
-        {step === 4 && !isAnalyzing && profileImages.length === 0 && (
-          <div className="text-center space-y-8">
-            <div className="space-y-4">
-              <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full mx-auto flex items-center justify-center">
-                <Camera className="w-10 h-10 text-white" />
-              </div>
-              <h2 className="text-3xl font-bold text-gray-800">프로필 사진을 업로드해주세요</h2>
-              <p className="text-gray-600 max-w-md mx-auto">
-                현재 사용 중이거나 고민 중인 프로필 사진들을 올려주세요. 최대 3장까지 분석 가능해요.
-              </p>
+        {step === 4 && !isAnalyzing && (
+          <div className="min-h-screen bg-gray-50">
+            {/* 헤더 */}
+            <div className="flex items-center justify-between p-4 bg-white border-b">
+              <button 
+                onClick={() => setStep(3)}
+                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+              >
+                <ArrowLeft className="w-6 h-6 text-gray-600" />
+              </button>
+              <h1 className="text-lg font-semibold text-gray-800">프사 추천받기</h1>
+              <div className="w-10"></div>
             </div>
 
-            <div className="max-w-md mx-auto">
-              <label className="flex flex-col items-center justify-center w-full h-64 border-2 border-blue-300 border-dashed rounded-xl cursor-pointer bg-blue-50 hover:bg-blue-100 transition-colors">
-                <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                  <Camera className="w-12 h-12 mb-4 text-blue-500" />
-                  <p className="mb-2 text-lg font-medium text-blue-700">프로필 사진 업로드</p>
-                  <p className="text-sm text-blue-500">최대 3장까지 선택 가능</p>
+            <div className="px-4 py-6 space-y-8">
+              {/* 메인 타이틀 */}
+              <div className="text-center space-y-4">
+                <h2 className="text-2xl font-bold text-gray-800">
+                  할까 말까 고민중인<br />
+                  프로필 사진을 올려보세요
+                </h2>
+                <div className="space-y-2">
+                  <p className="text-gray-600">
+                    프사 후보 사진을 올리면
+                  </p>
+                  <p className="text-gray-600">
+                    내 추구미에 어울리는지 알려드려요
+                  </p>
                 </div>
-                <input type="file" className="hidden" accept="image/*" multiple onChange={handleProfileUpload} />
-              </label>
+              </div>
+
+              {/* 추구미 vs 프사 후보 비교 */}
+              <div className="space-y-6">
+                <div className="flex items-center space-x-4">
+                  {/* 추구미 섹션 */}
+                  <div className="flex-1 text-center space-y-3">
+                    <h3 className="text-lg font-semibold text-gray-800">추구미</h3>
+                    <div className="aspect-square bg-gray-200 rounded-2xl overflow-hidden">
+                      {aspirationImages.length > 0 ? (
+                        <img 
+                          src={aspirationImages[0]} 
+                          alt="추구미" 
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center">
+                          <div className="text-center space-y-2">
+                            <Instagram className="w-8 h-8 text-gray-400 mx-auto" />
+                            <p className="text-sm text-gray-500">업로드한<br />SNS 피드</p>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* 화살표 */}
+                  <div className="flex items-center justify-center px-2">
+                    <div className="text-2xl text-gray-400">⇔</div>
+                  </div>
+
+                  {/* 프사 후보 섹션 */}
+                  <div className="flex-1 text-center space-y-3">
+                    <h3 className="text-lg font-semibold text-gray-800">프사 후보</h3>
+                    <div className="aspect-square bg-gray-200 rounded-2xl overflow-hidden">
+                      {profileImages.length > 0 ? (
+                        <img 
+                          src={profileImages[0]} 
+                          alt="프사 후보" 
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center">
+                          <div className="text-center space-y-2">
+                            <User className="w-8 h-8 text-gray-400 mx-auto" />
+                            <p className="text-sm text-gray-500">프사 예시</p>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* 유사도 결과 (더미) */}
+                <div className="text-center">
+                  <p className="text-lg text-gray-600">
+                    우리 사이 거리.. <span className="font-semibold">12m</span> 🚶
+                  </p>
+                </div>
+              </div>
+
+              {/* 업로드 버튼 또는 분석 버튼 */}
+              <div className="space-y-4">
+                {profileImages.length === 0 ? (
+                  <>
+                    <label className="block w-full cursor-pointer">
+                      <div className="w-full bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-500 hover:to-yellow-600 text-white font-bold py-4 px-6 rounded-2xl text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 flex items-center justify-center">
+                        <Camera className="w-5 h-5 mr-2" />
+                        사진 올리기 (최대 1장)
+                      </div>
+                      <input 
+                        type="file" 
+                        className="hidden" 
+                        accept="image/*" 
+                        onChange={handleProfileUpload}
+                      />
+                    </label>
+                    
+                    <p className="text-xs text-gray-500 text-center">
+                      업로드한 사진은 저장이나 학습되지 않습니다
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <button 
+                      onClick={() => {
+                        setIsAnalyzing(true);
+                        // 3초 후 분석 완료로 시뮬레이션
+                        setTimeout(() => {
+                          setIsAnalyzing(false);
+                          // 더미 분석 결과 설정
+                          setAnalysis({
+                            results: [
+                              {
+                                title: "프로필 사진 분석 결과",
+                                score: 85,
+                                improvement: "배경을 더 단순하게 하고 조명을 개선하면 더 좋을 것 같아요!"
+                              }
+                            ]
+                          });
+                          setStep(5);
+                        }, 3000);
+                      }}
+                      className="w-full bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white font-bold py-4 px-6 rounded-2xl text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 flex items-center justify-center"
+                    >
+                      <Sparkles className="w-5 h-5 mr-2" />
+                      AI 분석 시작하기
+                    </button>
+                    
+                    <button 
+                      onClick={() => {
+                        setProfileImages([]);
+                        setProfileFiles([]);
+                      }}
+                      className="w-full border-2 border-gray-300 hover:border-gray-400 text-gray-600 font-semibold py-3 px-4 rounded-xl transition-colors flex items-center justify-center"
+                    >
+                      <RotateCcw className="w-4 h-4 mr-2" />
+                      다른 사진 선택하기
+                    </button>
+                  </>
+                )}
+              </div>
             </div>
           </div>
         )}
@@ -573,9 +705,8 @@ function Page() {
                   <div className="flex items-center mb-2">
                     <img src={profileImages[index]} alt={`프로필 ${index + 1}`} className="w-12 h-12 object-cover rounded-lg mr-4" />
                     <div>
-                      <div className="font-semibold text-gray-800">유사도 점수: {item.similarityScore}/10</div>
-                      <div className="text-sm text-gray-500">{item.feedback}</div>
-                      <div className="text-sm text-green-700 mt-1">개선점: {item.improvement}</div>
+                      <div className="font-semibold text-gray-800">유사도 점수: {item.score}/100</div>
+                      <div className="text-sm text-gray-500">{item.improvement}</div>
                     </div>
                   </div>
                 </div>
