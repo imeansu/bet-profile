@@ -833,18 +833,7 @@ function Page() {
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Header */}
-      <div className="bg-white border-b border-gray-200 sticky top-0 z-10">
-        <div className="max-w-4xl mx-auto px-4 py-4 flex items-center">
-          <button
-            onClick={() => window.location.href = '/'}
-            className="flex items-center justify-center w-10 h-10 rounded-full hover:bg-gray-100 transition-colors mr-4"
-          >
-            <ArrowLeft className="w-6 h-6 text-gray-600" />
-          </button>
-          <h1 className="text-xl font-bold text-gray-800">이미지 올리기</h1>
-        </div>
-      </div>
+      {/* 공통 헤더 제거 */}
 
       <div className="max-w-4xl mx-auto px-4 py-8">
         {/* Progress Bar */}
@@ -989,17 +978,7 @@ function Page() {
         {/* Step 2: 분석 중 */}
         {step === 2 && isAnalyzing && (
           <div className="min-h-screen flex flex-col bg-white">
-            {/* 헤더 */}
-            <div className="flex items-center justify-between p-4 bg-white">
-              <button 
-                onClick={() => setStep(1)}
-                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
-              >
-                <ArrowLeft className="w-6 h-6 text-gray-600" />
-              </button>
-              <h1 className="text-lg font-semibold text-gray-800">추구미 분석</h1>
-              <div className="w-10"></div> {/* 균형을 위한 빈 공간 */}
-            </div>
+            {/* 공통 헤더 제거 */}
 
             {/* 메인 콘텐츠 */}
             <div className="absolute inset-0 flex flex-col items-center justify-center px-6 space-y-12">
@@ -1039,20 +1018,9 @@ function Page() {
         {/* Step 3: 추구미 분석 결과 */}
         {step === 3 && analysis && (
           <div className="min-h-screen bg-white">
-            {/* 헤더 */}
-            <div className="flex items-center justify-between p-4 bg-white border-b">
-              <button 
-                onClick={() => setStep(2)}
-                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
-              >
-                <ArrowLeft className="w-6 h-6 text-gray-600" />
-              </button>
-              <h1 className="text-lg font-semibold text-gray-800">당신의 추구미는...</h1>
-              <div className="w-10"></div>
-            </div>
+            {/* 공통 헤더 제거 */}
 
-            {/* 캡쳐할 결과 영역 */}
-            <div ref={resultRef} className="px-4 py-6 space-y-6">
+            <div className="px-4 py-6 space-y-6">
               {/* 업로드된 이미지들 */}
               <div className="grid grid-cols-3 gap-3">
                 {aspirationImages.slice(0, 3).map((img, index) => (
@@ -1174,17 +1142,7 @@ function Page() {
         {/* Step 4: 프로필 사진 업로드 */}
         {step === 4 && (
           <div className="min-h-screen bg-white">
-            {/* 헤더 */}
-            <div className="flex items-center justify-between p-4 bg-white border-b">
-              <button 
-                onClick={() => setStep(3)}
-                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
-              >
-                <ArrowLeft className="w-6 h-6 text-gray-600" />
-              </button>
-              <h1 className="text-lg font-semibold text-gray-800">프사 추천받기</h1>
-              <div className="w-10"></div>
-            </div>
+            {/* 공통 헤더 제거 */}
 
             <div className="px-4 py-6 space-y-8">
               {/* 메인 타이틀 */}
@@ -1310,20 +1268,7 @@ function Page() {
         {/* Step 5: 프로필 분석 로딩 화면 */}
         {step === 5 && (
           <div className="min-h-screen flex flex-col bg-white">
-            {/* 헤더 */}
-            <div className="flex items-center justify-between p-4 bg-white">
-              <button 
-                onClick={() => {
-                  setIsAnalyzingProfile(false);
-                  setStep(4);
-                }}
-                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
-              >
-                <ArrowLeft className="w-6 h-6 text-gray-600" />
-              </button>
-              <h1 className="text-lg font-semibold text-gray-800">프로필 분석 중</h1>
-              <div className="w-10"></div>
-            </div>
+            {/* 공통 헤더 제거 */}
 
             {/* 메인 콘텐츠 */}
             <div className="absolute inset-0 flex flex-col items-center justify-center px-6 space-y-12">
@@ -1363,17 +1308,7 @@ function Page() {
         {/* Step 6: 프로필 분석 결과 */}
         {step === 6 && profileAnalysis && (
           <div className="min-h-screen bg-white">
-            {/* 헤더 */}
-            <div className="flex items-center justify-between p-4 bg-white">
-              <button 
-                onClick={() => setStep(4)}
-                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
-              >
-                <ArrowLeft className="w-6 h-6 text-gray-600" />
-              </button>
-              <h1 className="text-lg font-semibold text-gray-800">프사 리포트 도착</h1>
-              <div className="w-10"></div>
-            </div>
+            {/* 공통 헤더 제거 */}
 
             <div ref={resultRef} className="p-4 space-y-6">
               {/* 프로필 이미지와 거리 표시 */}
