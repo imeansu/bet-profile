@@ -726,31 +726,140 @@ function Page() {
 
         {/* Step 5: 분석 결과 및 피드백 */}
         {step === 5 && analysis?.results && (
-          <div className="space-y-8">
-            <div className="text-center space-y-4">
-              <h2 className="text-2xl font-bold text-gray-800">프로필 분석 결과 (AI)</h2>
+          <div className="min-h-screen bg-gray-50">
+            {/* 헤더 */}
+            <div className="flex items-center justify-between p-4 bg-white border-b border-gray-200">
+              <button 
+                onClick={() => setStep(4)}
+                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+              >
+                <ArrowLeft className="w-6 h-6 text-gray-600" />
+              </button>
+              <h1 className="text-lg font-semibold text-gray-800">당신의 프사는...</h1>
+              <div className="w-10"></div>
             </div>
-            <div className="grid gap-4">
-              {analysis.results.map((item, index) => (
-                <div key={index} className="bg-white rounded-xl p-4 shadow-lg border border-gray-100">
-                  <div className="flex items-center mb-2">
-                    <img src={profileImages[index]} alt={`프로필 ${index + 1}`} className="w-12 h-12 object-cover rounded-lg mr-4" />
-                    <div>
-                      <div className="font-semibold text-gray-800">유사도 점수: {item.score}/100</div>
-                      <div className="text-sm text-gray-500">{item.improvement}</div>
+
+            <div className="p-6 space-y-6">
+              {/* 메인 프로필 이미지 */}
+              <div className="flex justify-center">
+                <div className="w-32 h-32 rounded-2xl overflow-hidden shadow-lg">
+                  <img src={profileImages[0]} alt="프로필 사진" className="w-full h-full object-cover" />
+                </div>
+              </div>
+
+              {/* 추구미 거리 표시 */}
+              <div className="bg-purple-50 rounded-2xl p-4 text-center">
+                <div className="flex items-center justify-center space-x-2 mb-2">
+                  <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+                  <span className="text-purple-700 font-medium">추구미까지 12m 남았어요</span>
+                </div>
+                <div className="text-sm text-purple-600">rei (12m)</div>
+                <div className="text-xs text-purple-500 mt-1">위치: 추구미역 2번 출구 근처</div>
+              </div>
+
+              {/* 추구미 설명 */}
+              <div className="bg-white rounded-2xl p-5 shadow-sm">
+                <h3 className="text-lg font-bold text-gray-800 mb-3">🎯 추구미</h3>
+                <div className="space-y-2">
+                  <p className="text-gray-800 font-medium">조용한 온기를 가진 도시형 감성.</p>
+                  <p className="text-sm text-gray-600">햇살과 나뭇잎이 있는 오후, 말을 아끼는 감각형 인간</p>
+                </div>
+              </div>
+
+              {/* 프사 분석 */}
+              <div className="bg-white rounded-2xl p-5 shadow-sm">
+                <h3 className="text-lg font-bold text-gray-800 mb-4">📊 프사 분석 (현재 느낌)</h3>
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center p-3 bg-gray-50 rounded-xl">
+                    <span className="text-sm font-medium text-gray-700">조명</span>
+                    <span className="text-xs text-gray-600 text-right flex-1 ml-4">어두운 조명 속 포인트 조명 + 약간의 블루빛<br/>차분하고 몽환적인 무드</span>
+                  </div>
+                  <div className="flex justify-between items-center p-3 bg-gray-50 rounded-xl">
+                    <span className="text-sm font-medium text-gray-700">의상 톤</span>
+                    <span className="text-xs text-gray-600 text-right flex-1 ml-4">딥한 블랙 & 뉴트럴 컬러<br/>정제되고 차분함</span>
+                  </div>
+                  <div className="flex justify-between items-center p-3 bg-gray-50 rounded-xl">
+                    <span className="text-sm font-medium text-gray-700">표정</span>
+                    <span className="text-xs text-gray-600 text-right flex-1 ml-4">자연스럽게 미소<br/>적당한 개방성과 편안함</span>
+                  </div>
+                  <div className="flex justify-between items-center p-3 bg-gray-50 rounded-xl">
+                    <span className="text-sm font-medium text-gray-700">배경 연출</span>
+                    <span className="text-xs text-gray-600 text-right flex-1 ml-4">드레이프 천+ 조명 + 그래픽<br/>살짝 꿈결 같은 비일상</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* 차이/포인트 설명 */}
+              <div className="bg-blue-50 rounded-2xl p-5">
+                <h3 className="text-lg font-bold text-blue-800 mb-3">💡 이 사진이 딱 맞는 이유</h3>
+                <div className="space-y-3 text-sm text-blue-700">
+                  <p>• 지금 프사는 <span className="font-bold">'잔잔한 자기감각'</span>이라는 추구미와 거의 가까워.</p>
+                  <p>• 특히 조명이 무겁지 않고, 표정도 부드럽게 살아 있어 딱딱하거나 인위적이지 않음.</p>
+                  <p>• 다만 몽환성이 살짝 더 부각되면서 "햇살과 잎사귀 아래"의 내추럴함보다는 조금 더 연출된 미감 쪽에 가까움.</p>
+                  <p>• 요약하자면 <span className="font-bold">"도시적 감성과 자연스러운 온기의 조화"</span>야.</p>
+                </div>
+              </div>
+
+              {/* 최종 진단 */}
+              <div className="bg-green-50 rounded-2xl p-5">
+                <h3 className="text-lg font-bold text-green-800 mb-3">✅ 최종 진단</h3>
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-green-700 font-medium">추구미 도달도</span>
+                    <span className="text-green-600 font-bold">근접</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-green-700 font-medium">감정 분위기 일치도</span>
+                    <span className="text-green-600 font-bold">높은 편 (부드럽고 따뜻함)</span>
+                  </div>
+                  <div className="mt-3 p-3 bg-green-100 rounded-xl">
+                    <p className="text-green-800 font-medium text-xs">💡 조정 팁</p>
+                    <p className="text-green-700 text-xs mt-1">배경을 자연광 중심 or 식물/베이지 톤으로 바꾸면 더 딱 맞을 수 있음</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* 함께하면 더 좋아요 */}
+              <div className="bg-white rounded-2xl p-5 shadow-sm">
+                <h3 className="text-lg font-bold text-gray-800 mb-4">🎨 함께하면 더 좋아요</h3>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
+                    <span className="text-sm text-gray-700">이 사진+추구미와 어울리는 배경 사진</span>
+                    <div className="flex space-x-2">
+                      <button className="px-3 py-1 bg-purple-100 text-purple-700 text-xs rounded-lg font-medium">
+                        저장하기
+                      </button>
+                      <button className="px-3 py-1 bg-purple-500 text-white text-xs rounded-lg font-medium">
+                        배경사진 설정하기
+                      </button>
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
+                    <span className="text-sm text-gray-700">이 사진+추구미와 어울리는 상태 메시지</span>
+                    <div className="flex space-x-2">
+                      <button className="px-3 py-1 bg-blue-100 text-blue-700 text-xs rounded-lg font-medium">
+                        복사하기
+                      </button>
+                      <button className="px-3 py-1 bg-blue-500 text-white text-xs rounded-lg font-medium">
+                        상태메시지 설정하기
+                      </button>
                     </div>
                   </div>
                 </div>
-              ))}
-            </div>
-            <div className="text-center">
-              <button
-                onClick={generateEditedImage}
-                className="bg-gradient-to-r from-green-500 to-blue-500 text-white px-8 py-3 rounded-xl font-medium hover:shadow-lg transition-all flex items-center mx-auto"
-              >
-                <Sparkles className="w-5 h-5 mr-2" />
-                AI로 개선된 이미지 생성하기
-              </button>
+              </div>
+
+              {/* 하단 버튼들 */}
+              <div className="space-y-3 pt-4">
+                <button className="w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold py-4 px-6 rounded-2xl text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300">
+                  결과 공유하기
+                </button>
+                <button 
+                  onClick={() => setStep(1)}
+                  className="w-full border-2 border-purple-300 text-purple-600 font-semibold py-3 px-6 rounded-2xl hover:bg-purple-50 transition-colors"
+                >
+                  다시 추구미하기
+                </button>
+              </div>
             </div>
           </div>
         )}
