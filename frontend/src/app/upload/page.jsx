@@ -18,7 +18,6 @@ function Page() {
     if (profileFiles.length > 0) {
       analyzeProfile();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [profileFiles]);
 
   const analyzeAspiration = async (file) => {
@@ -51,7 +50,6 @@ function Page() {
       if (aspirationFile) {
         formData.append('aspiration', aspirationFile);
       }
-      console.log('profileFiles before FormData append:', profileFiles);
       profileFiles.forEach((file) => {
         formData.append('profiles', file);
       });
@@ -98,8 +96,6 @@ function Page() {
       formData.append('image', new File([blob], 'profile.jpg', { type: blob.type }));
 
       const improvementPrompt = analysis?.results?.[0]?.improvement || 'improvement: 개선점';
-      // const improvementPrompt = "해변 배경으로 바꿔줘"
-      console.log('improvementPrompt:', improvementPrompt);
       formData.append('prompt', improvementPrompt);
 
       const res = await fetch('/edit-image', {
@@ -148,11 +144,11 @@ function Page() {
             </div>
           </div>
           <button
-            onClick={resetFlow}
+            onClick={() => window.location.href = '/'}
             className="flex items-center space-x-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
           >
             <RotateCcw className="w-4 h-4" />
-            <span className="text-sm">다시 시작</span>
+            <span className="text-sm">처음으로</span>
           </button>
         </div>
       </div>
@@ -395,48 +391,35 @@ function Page() {
                             <p className="text-sm text-green-600">더 밝은 표정 + 자연광 효과</p>
                           </div>
                         )}
-                        <div className="absolute inset-0 bg-gradient-to-t from-green-200/50 to-transparent"></div>
                       </div>
                       <div className="mt-3 text-center">
-                        <span className="text-2xl font-bold text-green-600">{improvedScore ? `${improvedScore}/50` : ''}</span>
-                        <p className="text-sm text-green-500">{improvedScore ? `예상 점수 (+${improvedScore - (analysis?.totalScore || 0)}점 향상!)` : ''}</p>
+                        <span className="text-2xl font-bold text-green-600">{improvedScore ? `${improvedScore}/50` : '45/50'}</span>
+                        <p className="text-sm text-green-500">개선된 점수</p>
                       </div>
                     </div>
                   </div>
                 </div>
 
-                <div className="bg-gradient-to-r from-green-50 to-blue-50 rounded-2xl p-6 border border-green-200">
-                  <h3 className="text-lg font-semibold mb-3 text-gray-800">🎨 적용된 편집 사항</h3>
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <div>
-                      <h4 className="font-medium text-green-700 mb-2">✨ 표정 개선</h4>
-                      <p className="text-sm text-gray-600">미소를 더 자연스럽고 밝게 조정했어요</p>
-                    </div>
-                    <div>
-                      <h4 className="font-medium text-green-700 mb-2">💡 조명 보정</h4>
-                      <p className="text-sm text-gray-600">자연광 효과를 더해 생동감을 높였어요</p>
-                    </div>
-                    <div>
-                      <h4 className="font-medium text-green-700 mb-2">📐 각도 조정</h4>
-                      <p className="text-sm text-gray-600">추구미와 비슷한 각도로 미세 조정했어요</p>
-                    </div>
-                    <div>
-                      <h4 className="font-medium text-green-700 mb-2">🎨 색감 보정</h4>
-                      <p className="text-sm text-gray-600">전체적인 톤을 따뜻하게 조정했어요</p>
-                    </div>
+                <div className="text-center space-y-4">
+                  <div className="bg-green-50 border border-green-200 rounded-xl p-4">
+                    <h3 className="text-lg font-semibold text-green-800 mb-2">🎉 개선 완료!</h3>
+                    <p className="text-green-700">AI 편집으로 더 매력적인 프로필 이미지가 완성되었어요.</p>
                   </div>
-                </div>
-
-                <div className="flex justify-center space-x-4">
-                  <button
-                    onClick={resetFlow}
-                    className="px-6 py-3 border border-gray-300 text-gray-700 rounded-xl font-medium hover:bg-gray-50 transition-colors"
-                  >
-                    다른 이미지로 다시 시도
-                  </button>
-                  <button className="bg-gradient-to-r from-green-500 to-blue-500 text-white px-8 py-3 rounded-xl font-medium hover:shadow-lg transition-all">
-                    편집된 이미지 다운로드
-                  </button>
+                  
+                  <div className="flex gap-4 justify-center">
+                    <button
+                      onClick={resetFlow}
+                      className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-6 py-3 rounded-xl font-medium transition-colors"
+                    >
+                      다시 시작하기
+                    </button>
+                    <button
+                      onClick={() => window.location.href = '/'}
+                      className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-xl font-medium hover:shadow-lg transition-all"
+                    >
+                      처음으로 돌아가기
+                    </button>
+                  </div>
                 </div>
               </div>
             )}
@@ -447,4 +430,4 @@ function Page() {
   );
 }
 
-export default Page; 
+export default Page;
