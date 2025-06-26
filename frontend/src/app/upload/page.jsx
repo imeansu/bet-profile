@@ -93,7 +93,7 @@ function Page() {
         formData.append('images', file);
       });
 
-      const response = await fetch('http://localhost:4000/analyze-aspiration', {
+      const response = await fetch('/analyze-aspiration', {
         method: 'POST',
         body: formData,
       });
@@ -130,7 +130,7 @@ function Page() {
       formData.append('profileImage', profileFile);
       formData.append('aspirationAnalysis', JSON.stringify(analysis));
 
-      const response = await fetch('http://localhost:4000/analyze-profile', {
+      const response = await fetch('/analyze-profile', {
         method: 'POST',
         body: formData,
       });
