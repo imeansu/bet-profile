@@ -6,6 +6,7 @@ const path = require('path');
 const { OpenAI } = require('openai');
 const fetch = require('node-fetch');
 const { initializeApiKeys } = require('./secrets');
+const logger = require('./logger');
 
 // Global variables for API keys
 let openaiApiKey = null;
@@ -22,25 +23,25 @@ async function initializeApp() {
     openaiApiKey = apiKeys.openaiApiKey;
     bflApiKey = apiKeys.bflApiKey;
     
-    console.log('API keys loaded:');
-    console.log('- OpenAI API Key length:', openaiApiKey ? openaiApiKey.length : 0);
-    console.log('- BFL API Key length:', bflApiKey ? bflApiKey.length : 0);
-    console.log('- OpenAI API Key starts with:', openaiApiKey ? openaiApiKey.substring(0, 7) + '...' : 'undefined');
+    logger.info('API keys loaded:');
+    logger.info('- OpenAI API Key length:', openaiApiKey ? openaiApiKey.length : 0);
+    logger.info('- BFL API Key length:', bflApiKey ? bflApiKey.length : 0);
+    logger.info('- OpenAI API Key starts with:', openaiApiKey ? openaiApiKey.substring(0, 7) + '...' : 'undefined');
     
     // Initialize OpenAI client
     openai = new OpenAI({ apiKey: openaiApiKey });
     
     // Test OpenAI connection
-    console.log('Testing OpenAI connection...');
+    logger.info('Testing OpenAI connection...');
     try {
       const testResponse = await openai.models.list();
-      console.log('✅ OpenAI connection successful! Available models:', testResponse.data.length);
+      logger.info('✅ OpenAI connection successful! Available models:', testResponse.data.length);
     } catch (testError) {
       console.error('❌ OpenAI connection test failed:', testError.message);
       console.error('Error details:', testError);
     }
     
-    console.log('API keys initialized successfully');
+    logger.info('API keys initialized successfully');
   } catch (error) {
     console.error('Failed to initialize API keys:', error);
     process.exit(1);
@@ -61,10 +62,10 @@ app.get('/', (req, res) => {
 // Analyze aspiration images endpoint (OpenAI Vision) - supports 1-3 images
 app.post('/analyze-aspiration', upload.array('images', 3), async (req, res) => {
   try {
-    console.log('🔍 Starting aspiration analysis...');
-    console.log('OpenAI client initialized:', !!openai);
-    console.log('OpenAI API key available:', !!openaiApiKey);
-    console.log('Number of images received:', req.files?.length || 0);
+    logger.info('🔍 Starting aspiration analysis...');
+    logger.info('OpenAI client initialized:', !!openai);
+    logger.info('OpenAI API key available:', !!openaiApiKey);
+    logger.info('Number of images received:', req.files?.length || 0);
     
     if (!req.files || req.files.length === 0) {
       return res.status(400).json({ error: '이미지를 업로드해주세요.' });
@@ -78,7 +79,7 @@ app.post('/analyze-aspiration', upload.array('images', 3), async (req, res) => {
     const imageContents = req.files.map(file => {
       const base64Image = file.buffer.toString('base64');
       const imageDataUrl = `data:${file.mimetype};base64,${base64Image}`;
-      console.log(`Image converted to base64, size: ${base64Image.length}`);
+      logger.info(`Image converted to base64, size: ${base64Image.length}`);
       return { type: 'image_url', image_url: { url: imageDataUrl } };
     });
 
@@ -333,7 +334,7 @@ ai_comment:
       ...imageContents
     ];
 
-    console.log('📡 Calling OpenAI Vision API with', req.files.length, 'images...');
+    logger.info('📡 Calling OpenAI Vision API with', req.files.length, 'images...');
     // Call OpenAI Vision
     const completion = await openai.chat.completions.create({
       model: 'gpt-4o',
@@ -346,12 +347,12 @@ ai_comment:
       max_tokens: 1000,
     });
 
-    console.log('✅ OpenAI API call successful!');
-    console.log('Response received, choices:', completion.choices.length);
+    logger.info('✅ OpenAI API call successful!');
+    logger.info('Response received, choices:', completion.choices.length);
 
     // Parse the response
     const text = completion.choices[0].message.content;
-    console.log('Raw OpenAI response:', text);
+    logger.info('Raw OpenAI response:', text);
     
     // Try to extract JSON from the response
     const jsonStart = text.indexOf('{');
@@ -361,14 +362,14 @@ ai_comment:
     if (jsonStart !== -1 && jsonEnd !== -1) {
       try {
         analysis = JSON.parse(text.substring(jsonStart, jsonEnd + 1));
-        console.log('✅ JSON parsed successfully');
+        logger.info('✅ JSON parsed successfully');
         
         // Validate the required fields
         if (!analysis.main_message || !analysis.profile_traits) {
           throw new Error('Invalid JSON structure');
         }
       } catch (parseError) {
-        console.log('⚠️ JSON parsing failed, creating fallback response');
+        logger.info('⚠️ JSON parsing failed, creating fallback response');
         analysis = {
           main_message: "✨은은한 감성이 담긴 스타일✨",
           one_liner: "조용한 매력으로 사계절을 버텨내는 사람",
@@ -394,7 +395,7 @@ ai_comment:
         };
       }
     } else {
-      console.log('⚠️ Could not find JSON in response, creating fallback');
+      logger.info('⚠️ Could not find JSON in response, creating fallback');
       analysis = {
         main_message: "✨은은한 감성이 담긴 스타일✨",
         one_liner: "조용한 매력으로 사계절을 버텨내는 사람",
@@ -450,10 +451,10 @@ ai_comment:
 // Analyze profile image endpoint (OpenAI Vision) - single image + aspiration analysis
 app.post('/analyze-profile', upload.single('profileImage'), async (req, res) => {
   try {
-    console.log('🔍 Starting profile analysis...');
-    console.log('OpenAI client initialized:', !!openai);
-    console.log('Profile image received:', !!req.file);
-    console.log('Aspiration analysis data:', req.body.aspirationAnalysis ? 'received' : 'missing');
+    logger.info('🔍 Starting profile analysis...');
+    logger.info('OpenAI client initialized:', !!openai);
+    logger.info('Profile image received:', !!req.file);
+    logger.info('Aspiration analysis data:', req.body.aspirationAnalysis ? 'received' : 'missing');
     
     if (!req.file) {
       return res.status(400).json({ error: '프로필 사진을 업로드해주세요.' });
@@ -477,7 +478,7 @@ app.post('/analyze-profile', upload.single('profileImage'), async (req, res) => 
     // Convert profile image to base64
     const base64Image = req.file.buffer.toString('base64');
     const imageDataUrl = `data:${req.file.mimetype};base64,${base64Image}`;
-    console.log(`Profile image converted to base64, size: ${base64Image.length}`);
+    logger.info(`Profile image converted to base64, size: ${base64Image.length}`);
 
     // Create chugumi summary for prompt
     const chugumiSummary = `${aspirationData.main_message || ''} - ${aspirationData.one_liner || ''} (${aspirationData.ai_comment || ''})`;
@@ -818,7 +819,7 @@ ai_comment:
       { type: 'image_url', image_url: { url: imageDataUrl } }
     ];
 
-    console.log('📡 Calling OpenAI Vision API for profile analysis...');
+    logger.info('📡 Calling OpenAI Vision API for profile analysis...');
     // Call OpenAI Vision
     const completion = await openai.chat.completions.create({
       model: 'gpt-4o',
@@ -831,12 +832,12 @@ ai_comment:
       max_tokens: 1500,
     });
 
-    console.log('✅ OpenAI API call successful for profile analysis!');
-    console.log('Response received, choices:', completion.choices.length);
+    logger.info('✅ OpenAI API call successful for profile analysis!');
+    logger.info('Response received, choices:', completion.choices.length);
 
     // Parse the response
     const text = completion.choices[0].message.content;
-    console.log('Raw OpenAI response:', text);
+    logger.info('Raw OpenAI response:', text);
     
     // Try to extract JSON from the response
     const jsonStart = text.indexOf('{');
@@ -846,7 +847,7 @@ ai_comment:
     if (jsonStart !== -1 && jsonEnd !== -1) {
       try {
         analysis = JSON.parse(text.substring(jsonStart, jsonEnd + 1));
-        console.log('✅ JSON parsing successful!');
+        logger.info('✅ JSON parsing successful!');
       } catch (parseError) {
         console.error('❌ JSON parsing failed:', parseError);
         console.error('Raw text:', text);
@@ -940,7 +941,7 @@ ai_comment:
       };
     }
 
-    console.log('📤 Sending profile analysis response...');
+    logger.info('📤 Sending profile analysis response...');
     res.json(analysis);
 
   } catch (error) {
@@ -956,7 +957,7 @@ ai_comment:
 // 배경 이미지 생성 엔드포인트
 app.post('/generate-backgrounds', upload.single('profile'), async (req, res) => {
   try {
-    console.log('배경 이미지 생성 요청 받음');
+    logger.info('배경 이미지 생성 요청 받음');
     
     const { profileAnalysis, chugumiSummary } = req.body;
     
@@ -978,7 +979,7 @@ app.post('/generate-backgrounds', upload.single('profile'), async (req, res) => 
       basePrompt + "Artistic painted-style background with warm tones, soft brush strokes, dreamy atmosphere, illustration style mixed with photography, creative artistic mood, warm color palette"
     ];
 
-    console.log('DALL-E 3 API 호출 시작...');
+    logger.info('DALL-E 3 API 호출 시작...');
     
     const imagePromises = prompts.map(async (prompt, index) => {
       try {
@@ -1009,7 +1010,7 @@ app.post('/generate-backgrounds', upload.single('profile'), async (req, res) => 
       throw new Error('모든 배경 이미지 생성에 실패했습니다');
     }
 
-    console.log(`${successfulImages.length}개의 배경 이미지 생성 완료`);
+    logger.info(`${successfulImages.length}개의 배경 이미지 생성 완료`);
     
     res.json({ 
       success: true, 
@@ -1032,22 +1033,22 @@ app.post('/analyze-profile-old', upload.fields([
   { name: 'profiles', maxCount: 3 }
 ]), async (req, res) => {
   try {
-    console.log('req.files:', req.files);
-    console.log('req.files keys:', Object.keys(req.files));
+    logger.info('req.files:', req.files);
+    logger.info('req.files keys:', Object.keys(req.files));
     if (req.files['profiles']) {
       req.files['profiles'].forEach((f, i) => {
-        console.log(`profiles[${i}]: name=${f.originalname}, size=${f.size}`);
+        logger.info(`profiles[${i}]: name=${f.originalname}, size=${f.size}`);
       });
     }
     if (req.files['aspiration']) {
       req.files['aspiration'].forEach((f, i) => {
-        console.log(`aspiration[${i}]: name=${f.originalname}, size=${f.size}`);
+        logger.info(`aspiration[${i}]: name=${f.originalname}, size=${f.size}`);
       });
     }
     const aspirationFile = req.files['aspiration']?.[0];
     const profileFiles = req.files['profiles'] || [];
-    console.log('Received aspiration file:', !!aspirationFile);
-    console.log('Received profile files:', profileFiles.length);
+    logger.info('Received aspiration file:', !!aspirationFile);
+    logger.info('Received profile files:', profileFiles.length);
     if (!aspirationFile || profileFiles.length === 0) {
       return res.status(400).json({ error: 'aspiration image and at least one profile image are required' });
     }
@@ -1083,7 +1084,7 @@ app.post('/analyze-profile-old', upload.fields([
       });
 
       const text = completion.choices[0].message.content;
-      console.log('OpenAI response:', text);
+      logger.info('OpenAI response:', text);
       // Try to extract JSON from the response
       const jsonStart = text.indexOf('{');
       const jsonEnd = text.lastIndexOf('}');
@@ -1136,16 +1137,16 @@ app.post('/edit-image', upload.single('image'), async (req, res) => {
     } catch (e) {
       // fallback to default
     }
-    console.log('Improvement (Korean):', improvementKorean);
+    logger.info('Improvement (Korean):', improvementKorean);
 
     // Translate to English
     const improvementEnglish = await translateToEnglish(improvementKorean, openai);
-    console.log('Improvement (English):', improvementEnglish);
+    logger.info('Improvement (English):', improvementEnglish);
 
     // Convert image buffer to base64
     const base64Image = req.file.buffer.toString('base64');
-    console.log('BFL prompt:', improvementEnglish);
-    console.log('Base64 image length:', base64Image.length);
+    logger.info('BFL prompt:', improvementEnglish);
+    logger.info('Base64 image length:', base64Image.length);
 
     // Step 1: Create the edit request
     const createRes = await fetch('https://api.bfl.ai/v1/flux-kontext-pro', {
@@ -1162,7 +1163,7 @@ app.post('/edit-image', upload.single('image'), async (req, res) => {
     });
 
     const createData = await createRes.json();
-    console.log('BFL create response:', createData);
+    logger.info('BFL create response:', createData);
     if (!createData.polling_url) {
       throw new Error('Failed to create image edit request: ' + JSON.stringify(createData));
     }
@@ -1178,7 +1179,7 @@ app.post('/edit-image', upload.single('image'), async (req, res) => {
         }
       });
       const pollData = await pollRes.json();
-      console.log('BFL poll response:', pollData);
+      logger.info('BFL poll response:', pollData);
       if (pollData.status === 'Ready') {
         resultUrl = pollData.result.sample;
         break;
@@ -1209,7 +1210,7 @@ app.get(/^\/(?!api|analyze-).*/, (req, res) => {
 // Initialize app and start server
 initializeApp().then(() => {
   app.listen(PORT, () => {
-    console.log(`Server listening on http://localhost:${PORT}`);
+    logger.info(`Server listening on http://localhost:${PORT}`);
   });
 }).catch((error) => {
   console.error('Failed to start server:', error);
