@@ -662,7 +662,7 @@ function Page() {
                         setProfileImages([]);
                         setProfileFiles([]);
                       }}
-                      className="w-full border-2 border-gray-300 hover:border-gray-400 text-gray-600 font-semibold py-3 px-4 rounded-xl transition-colors flex items-center justify-center"
+                      className="w-full border-2 border-gray-300 hover:border-gray-400 text-gray-600 font-semibold py-3 px-4 rounded-xl transition-colors"
                     >
                       <RotateCcw className="w-4 h-4 mr-2" />
                       다른 사진 선택하기
@@ -676,19 +676,50 @@ function Page() {
 
         {/* Step 4: 분석 중 */}
         {step === 4 && isAnalyzing && (
-          <div className="text-center space-y-8">
-            <div className="flex justify-center space-x-4">
-              {profileImages.map((img, index) => (
-                <div key={index} className="w-24 h-24 relative">
-                  <img src={img} alt={`프로필 ${index + 1}`} className="w-full h-full object-cover rounded-xl" />
-                  <div className="absolute inset-0 bg-blue-500/20 rounded-xl animate-pulse"></div>
-                </div>
-              ))}
+          <div className="min-h-screen flex flex-col">
+            {/* 헤더 */}
+            <div className="flex items-center justify-between p-4 bg-white">
+              <button 
+                onClick={() => setIsAnalyzing(false)}
+                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+              >
+                <ArrowLeft className="w-6 h-6 text-gray-600" />
+              </button>
+              <h1 className="text-lg font-semibold text-gray-800">프사 분석</h1>
+              <div className="w-10"></div> {/* 균형을 위한 빈 공간 */}
             </div>
-            <div className="space-y-4">
-              <div className="animate-spin w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full mx-auto"></div>
-              <h2 className="text-2xl font-bold text-gray-800">{currentMessage}</h2>
-              <p className="text-gray-600">{currentEmoji}</p>
+
+            {/* 메인 콘텐츠 */}
+            <div className="absolute inset-0 flex flex-col items-center justify-center px-6 space-y-12">
+              {/* 메인 타이틀 */}
+              <div className="text-center space-y-4">
+                <h2 className="text-3xl font-bold text-gray-800">
+                  프로필 사진을 분석 중이에요...
+                </h2>
+                <p className="text-gray-500 text-lg">
+                  AI가 이미지를 꼼꼼히 분석하고 있어요
+                </p>
+              </div>
+
+              {/* 진행 메시지 박스 */}
+              <div className="w-full max-w-sm">
+                <div className="bg-gray-100 rounded-2xl p-6 text-center space-y-4">
+                  {/* 이모지 */}
+                  <div className="text-4xl animate-bounce">
+                    {currentEmoji}
+                  </div>
+                  
+                  {/* 진행 메시지 */}
+                  <p className="text-lg font-medium text-gray-700">
+                    {currentMessage}
+                  </p>
+                  
+                  {/* 로딩 바 */}
+                  <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div className="bg-gradient-to-r from-purple-500 to-pink-500 h-2 rounded-full animate-pulse" style={{width: '60%'}}></div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         )}
