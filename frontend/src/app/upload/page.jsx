@@ -92,7 +92,7 @@ function Page() {
         formData.append('images', file);
       });
 
-      const response = await fetch('http://localhost:4000/analyze-aspiration', {
+      const response = await fetch('/analyze-aspiration', {
         method: 'POST',
         body: formData,
       });
@@ -129,7 +129,7 @@ function Page() {
       formData.append('profileImage', profileFile);
       formData.append('aspirationAnalysis', JSON.stringify(analysis));
 
-      const response = await fetch('http://localhost:4000/analyze-profile', {
+      const response = await fetch('/analyze-profile', {
         method: 'POST',
         body: formData,
       });
@@ -604,7 +604,7 @@ function Page() {
       formData.append('profileAnalysis', JSON.stringify(profileAnalysisData));
       formData.append('chugumiSummary', chugumiSummary || '독특한 개성을 가진 감성적인 스타일');
 
-      const response = await fetch('http://localhost:4000/generate-backgrounds', {
+      const response = await fetch('/generate-backgrounds', {
         method: 'POST',
         body: formData,
       });
