@@ -1,10 +1,11 @@
 'use client';
 import React, { useState, useEffect } from 'react';
-import { Upload, Camera, Star, Target, Palette, Users, Sparkles, ArrowRight, RotateCcw } from 'lucide-react';
+import { Upload, Camera, Star, Target, Palette, Users, Sparkles, ArrowRight, RotateCcw, ArrowLeft, User, Instagram } from 'lucide-react';
 
 function Page() {
   const [step, setStep] = useState(1);
   const [aspirationImage, setAspirationImage] = useState(null);
+  const [aspirationImages, setAspirationImages] = useState([]);
   const [profileImages, setProfileImages] = useState([]);
   const [analysis, setAnalysis] = useState(null);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
@@ -12,13 +13,57 @@ function Page() {
   const [editedImageUrl, setEditedImageUrl] = useState(null);
   const [improvedScore, setImprovedScore] = useState(null);
   const [aspirationFile, setAspirationFile] = useState(null);
+  const [aspirationFiles, setAspirationFiles] = useState([]);
   const [profileFiles, setProfileFiles] = useState([]);
+  const [currentMessage, setCurrentMessage] = useState('');
+  const [currentEmoji, setCurrentEmoji] = useState('🔍');
+
+  // 분석 중 메시지와 이모지 배열
+  const analysisMessages = [
+    { text: "유니크함 감지 중...", emoji: "🔍" },
+    { text: "색감 데이터 수집 완료!", emoji: "🎨" },
+    { text: "당신만의 스타일, 분석 중...", emoji: "✨" },
+    { text: "스타일 DNA 디코딩 중...", emoji: "🧬" },
+    { text: "색감 굿!", emoji: "🌈" },
+    { text: "이런 스타일 처음이야!", emoji: "😮" },
+    { text: "와우... 독특한 무드 감지!", emoji: "🤩" },
+    { text: "패션 감각 측정 중...", emoji: "👗" },
+    { text: "개성 지수 계산 완료!", emoji: "📊" },
+    { text: "트렌드 매칭 중...", emoji: "🔥" },
+    { text: "스타일 코드 해독 중...", emoji: "🔐" },
+    { text: "당신의 매력 포인트 발견!", emoji: "💎" },
+    { text: "센스 레벨 측정 완료!", emoji: "🎯" },
+    { text: "독창성 99% 확인됨!", emoji: "🚀" }
+  ];
 
   useEffect(() => {
     if (profileFiles.length > 0) {
       analyzeProfile();
     }
   }, [profileFiles]);
+
+  useEffect(() => {
+    let interval;
+    if (isAnalyzing) {
+      // 초기 메시지 설정
+      const initialMessage = analysisMessages[Math.floor(Math.random() * analysisMessages.length)];
+      setCurrentMessage(initialMessage.text);
+      setCurrentEmoji(initialMessage.emoji);
+
+      // 2초마다 메시지 변경
+      interval = setInterval(() => {
+        const randomMessage = analysisMessages[Math.floor(Math.random() * analysisMessages.length)];
+        setCurrentMessage(randomMessage.text);
+        setCurrentEmoji(randomMessage.emoji);
+      }, 2000);
+    }
+
+    return () => {
+      if (interval) {
+        clearInterval(interval);
+      }
+    };
+  }, [isAnalyzing]);
 
   const analyzeAspiration = async (file) => {
     setIsAnalyzing(true);
@@ -69,13 +114,14 @@ function Page() {
   };
 
   const handleAspirationUpload = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const url = URL.createObjectURL(file);
-      setAspirationImage(url);
-      setAspirationFile(file);
-      setStep(2);
-      analyzeAspiration(file);
+    const files = Array.from(e.target.files).slice(0, 3); // 최대 3장까지만
+    if (files.length > 0) {
+      const urls = files.map(file => URL.createObjectURL(file));
+      setAspirationImages(urls);
+      setAspirationFiles(files);
+      // 첫 번째 이미지를 기본으로 설정 (기존 코드 호환성 위해)
+      setAspirationImage(urls[0]);
+      setAspirationFile(files[0]);
     }
   };
 
@@ -117,6 +163,7 @@ function Page() {
   const resetFlow = () => {
     setStep(1);
     setAspirationImage(null);
+    setAspirationImages([]);
     setProfileImages([]);
     setAnalysis(null);
     setSelectedImageIndex(0);
@@ -124,32 +171,24 @@ function Page() {
     setEditedImageUrl(null);
     setImprovedScore(null);
     setAspirationFile(null);
+    setAspirationFiles([]);
     setProfileFiles([]);
+    setCurrentMessage('');
+    setCurrentEmoji('🔍');
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50">
       {/* Header */}
-      <div className="bg-white/80 backdrop-blur-sm border-b border-purple-100 sticky top-0 z-10">
-        <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl flex items-center justify-center">
-              <Sparkles className="w-6 h-6 text-white" />
-            </div>
-            <div>
-              <h1 className="text-xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
-                프로필 아이덴티티 AI
-              </h1>
-              <p className="text-sm text-gray-500">AI가 더 나은 첫인상을 설계해드려요</p>
-            </div>
-          </div>
+      <div className="bg-white border-b border-gray-200 sticky top-0 z-10">
+        <div className="max-w-4xl mx-auto px-4 py-4 flex items-center">
           <button
             onClick={() => window.location.href = '/'}
-            className="flex items-center space-x-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+            className="flex items-center justify-center w-10 h-10 rounded-full hover:bg-gray-100 transition-colors mr-4"
           >
-            <RotateCcw className="w-4 h-4" />
-            <span className="text-sm">처음으로</span>
+            <ArrowLeft className="w-6 h-6 text-gray-600" />
           </button>
+          <h1 className="text-xl font-bold text-gray-800">이미지 올리기</h1>
         </div>
       </div>
 
@@ -170,41 +209,175 @@ function Page() {
 
         {/* Step 1: 추구미 업로드 */}
         {step === 1 && (
-          <div className="text-center space-y-8">
-            <div className="space-y-4">
-              <div className="w-20 h-20 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full mx-auto flex items-center justify-center">
-                <Target className="w-10 h-10 text-white" />
-              </div>
-              <h2 className="text-3xl font-bold text-gray-800">추구미를 알려주세요</h2>
-              <p className="text-gray-600 max-w-md mx-auto">
-                어떤 사람처럼 보이고 싶나요? 이상적인 이미지를 업로드해주시면 AI가 분석해드릴게요.
-              </p>
+          <div className="max-w-md mx-auto px-4 py-8 space-y-8">
+            {/* 메인 타이틀 */}
+            <div className="text-center space-y-4">
+              <h2 className="text-2xl font-bold text-gray-800 leading-tight">
+                내가 추구하는 스타일을<br />
+                사진으로 알려주세요
+              </h2>
+              <p className="text-gray-600">AI가 나만의 스타일을 찾아드려요</p>
             </div>
 
-            <div className="max-w-md mx-auto">
-              <label className="flex flex-col items-center justify-center w-full h-64 border-2 border-purple-300 border-dashed rounded-xl cursor-pointer bg-purple-50 hover:bg-purple-100 transition-colors">
-                <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                  <Upload className="w-12 h-12 mb-4 text-purple-500" />
-                  <p className="mb-2 text-lg font-medium text-purple-700">추구미 이미지 업로드</p>
-                  <p className="text-sm text-purple-500">PNG, JPG 파일을 선택해주세요</p>
+            {/* 선택 옵션 */}
+            <div className="space-y-6">
+              <div className="flex justify-between items-center">
+                <span className="text-lg font-semibold text-gray-700">지금의 나</span>
+                <span className="text-lg font-semibold text-gray-700">닮고 싶은 나</span>
+              </div>
+              
+              <div className="flex gap-4">
+                <div className="flex-1 space-y-3">
+                  <div className="w-full h-32 bg-gray-200 rounded-2xl flex items-center justify-center border-2 border-gray-300">
+                    <div className="text-center">
+                      <User className="w-8 h-8 text-gray-500 mx-auto mb-2" />
+                      <span className="text-lg font-medium text-gray-700">내 프사</span>
+                    </div>
+                  </div>
+                  <p className="text-sm text-gray-500 text-center">내 프사 / 내 일상 사진</p>
                 </div>
-                <input type="file" className="hidden" accept="image/*" onChange={handleAspirationUpload} />
-              </label>
+                
+                <div className="flex items-center">
+                  <span className="text-gray-400 font-medium">or</span>
+                </div>
+                
+                <div className="flex-1 space-y-3">
+                  <div className="w-full h-32 bg-gray-200 rounded-2xl flex items-center justify-center border-2 border-gray-300">
+                    <div className="text-center">
+                      <Instagram className="w-8 h-8 text-gray-500 mx-auto mb-2" />
+                      <span className="text-lg font-medium text-gray-700">인스타피드</span>
+                    </div>
+                  </div>
+                  <p className="text-sm text-gray-500 text-center">
+                    내가 좋아하는 SNS 피드<br />
+                    따라하고 싶은 유명인 사진
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* 선택된 이미지 미리보기 */}
+            {aspirationImages.length > 0 && (
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold text-gray-700 text-center">선택된 사진들</h3>
+                <div className="grid grid-cols-3 gap-3">
+                  {aspirationImages.map((img, index) => (
+                    <div key={index} className="relative">
+                      <img 
+                        src={img} 
+                        alt={`선택된 사진 ${index + 1}`} 
+                        className="w-full h-24 object-cover rounded-xl border-2 border-purple-200"
+                      />
+                      <button
+                        onClick={() => {
+                          const newImages = aspirationImages.filter((_, i) => i !== index);
+                          const newFiles = aspirationFiles.filter((_, i) => i !== index);
+                          setAspirationImages(newImages);
+                          setAspirationFiles(newFiles);
+                          if (newImages.length > 0) {
+                            setAspirationImage(newImages[0]);
+                            setAspirationFile(newFiles[0]);
+                          } else {
+                            setAspirationImage(null);
+                            setAspirationFile(null);
+                          }
+                        }}
+                        className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full text-xs flex items-center justify-center hover:bg-red-600 transition-colors"
+                      >
+                        ×
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* 업로드 버튼 */}
+            <div className="space-y-4">
+              <div className="w-full">
+                <label className="block w-full cursor-pointer">
+                  <div className="w-full bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-500 hover:to-yellow-600 text-white font-bold py-4 px-6 rounded-2xl text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 flex items-center justify-center">
+                    <Upload className="w-5 h-5 mr-2" />
+                    {aspirationImages.length > 0 ? `사진 추가하기 (${aspirationImages.length}/3)` : '사진 올리기 (최대 3장)'}
+                  </div>
+                  <input 
+                    type="file" 
+                    className="hidden" 
+                    accept="image/*" 
+                    multiple 
+                    onChange={handleAspirationUpload}
+                    disabled={aspirationImages.length >= 3}
+                  />
+                </label>
+              </div>
+              
+              {/* 분석 시작 버튼 */}
+              {aspirationImages.length > 0 && (
+                <button
+                  onClick={() => {
+                    setStep(2);
+                    analyzeAspiration(aspirationFiles[0]);
+                  }}
+                  className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-bold py-4 px-6 rounded-2xl text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 flex items-center justify-center"
+                >
+                  <Sparkles className="w-5 h-5 mr-2" />
+                  AI 분석 시작하기
+                </button>
+              )}
+              
+              <p className="text-xs text-gray-500 text-center">
+                업로드한 사진은 저장이나 학습되지 않습니다
+              </p>
             </div>
           </div>
         )}
 
         {/* Step 2: 분석 중 */}
         {step === 2 && isAnalyzing && (
-          <div className="text-center space-y-8">
-            <div className="w-32 h-32 mx-auto relative">
-              <img src={aspirationImage} alt="추구미" className="w-full h-full object-cover rounded-2xl" />
-              <div className="absolute inset-0 bg-purple-500/20 rounded-2xl animate-pulse"></div>
+          <div className="min-h-screen flex flex-col">
+            {/* 헤더 */}
+            <div className="flex items-center justify-between p-4 bg-white">
+              <button 
+                onClick={() => setStep(1)}
+                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+              >
+                <ArrowLeft className="w-6 h-6 text-gray-600" />
+              </button>
+              <h1 className="text-lg font-semibold text-gray-800">추구미 분석</h1>
+              <div className="w-10"></div> {/* 균형을 위한 빈 공간 */}
             </div>
-            <div className="space-y-4">
-              <div className="animate-spin w-8 h-8 border-4 border-purple-500 border-t-transparent rounded-full mx-auto"></div>
-              <h2 className="text-2xl font-bold text-gray-800">AI가 추구미를 분석 중이에요</h2>
-              <p className="text-gray-600">이미지의 특성과 스타일을 파악하고 있어요...</p>
+
+            {/* 메인 콘텐츠 */}
+            <div className="absolute inset-0 flex flex-col items-center justify-center px-6 space-y-12">
+              {/* 메인 타이틀 */}
+              <div className="text-center space-y-4">
+                <h2 className="text-3xl font-bold text-gray-800">
+                  당신의 스타일을 해석 중이에요...
+                </h2>
+                <p className="text-gray-500 text-lg">
+                  AI가 이미지를 꼼꼼히 분석하고 있어요
+                </p>
+              </div>
+
+              {/* 진행 메시지 박스 */}
+              <div className="w-full max-w-sm">
+                <div className="bg-gray-100 rounded-2xl p-6 text-center space-y-4">
+                  {/* 이모지 */}
+                  <div className="text-4xl animate-bounce">
+                    {currentEmoji}
+                  </div>
+                  
+                  {/* 진행 메시지 */}
+                  <p className="text-lg font-medium text-gray-700">
+                    {currentMessage}
+                  </p>
+                  
+                  {/* 로딩 바 */}
+                  <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div className="bg-gradient-to-r from-purple-500 to-pink-500 h-2 rounded-full animate-pulse" style={{width: '60%'}}></div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         )}
@@ -271,7 +444,7 @@ function Page() {
         {step === 4 && !isAnalyzing && profileImages.length === 0 && (
           <div className="text-center space-y-8">
             <div className="space-y-4">
-              <div className="w-20 h-20 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full mx-auto flex items-center justify-center">
+              <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full mx-auto flex items-center justify-center">
                 <Camera className="w-10 h-10 text-white" />
               </div>
               <h2 className="text-3xl font-bold text-gray-800">프로필 사진을 업로드해주세요</h2>
@@ -306,8 +479,8 @@ function Page() {
             </div>
             <div className="space-y-4">
               <div className="animate-spin w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full mx-auto"></div>
-              <h2 className="text-2xl font-bold text-gray-800">프로필 사진을 분석하고 있어요</h2>
-              <p className="text-gray-600">추구미와 비교하여 점수를 매기는 중...</p>
+              <h2 className="text-2xl font-bold text-gray-800">{currentMessage}</h2>
+              <p className="text-gray-600">{currentEmoji}</p>
             </div>
           </div>
         )}
@@ -351,8 +524,8 @@ function Page() {
               <div className="text-center space-y-8">
                 <div className="space-y-4">
                   <div className="animate-spin w-8 h-8 border-4 border-green-500 border-t-transparent rounded-full mx-auto"></div>
-                  <h2 className="text-2xl font-bold text-gray-800">AI가 이미지를 편집하고 있어요</h2>
-                  <p className="text-gray-600">피드백을 바탕으로 최적화된 프로필을 만들고 있어요...</p>
+                  <h2 className="text-2xl font-bold text-gray-800">{currentMessage}</h2>
+                  <p className="text-gray-600">{currentEmoji}</p>
                 </div>
               </div>
             ) : (
