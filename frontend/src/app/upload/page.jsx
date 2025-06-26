@@ -614,7 +614,7 @@ function Page() {
         formData.append('profile', profileFile);
       }
 
-      const promptResponse = await fetch('http://localhost:4000/generate-background-prompts', {
+      const promptResponse = await fetch('/generate-background-prompts', {
         method: 'POST',
         body: formData,
       });
@@ -630,7 +630,7 @@ function Page() {
       // 2단계: 이미지 생성
       console.log('🖼️ 2단계: 이미지 생성 시작');
       
-      const imageResponse = await fetch('http://localhost:4000/generate-backgrounds', {
+      const imageResponse = await fetch('/generate-backgrounds', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
