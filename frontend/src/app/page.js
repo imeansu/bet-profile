@@ -59,12 +59,11 @@ export default function IntroPage() {
           {/* 시작 버튼 */}
           <div className="mb-6">
             <Link href="/upload">
-              <button className="w-full bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-500 hover:to-yellow-600 text-white font-bold py-4 px-8 rounded-2xl text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 relative overflow-hidden">
+              <button className="w-full bg-gradient-to-r from-[#8EC9FF] to-[#D1A4FF] text-white font-bold py-4 px-8 rounded-2xl text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 relative overflow-hidden">
                 <span className="relative z-10 flex items-center justify-center">
                   <Sparkles className="w-5 h-5 mr-2" />
-                  추구미 알아보기
+                  내 추구미 알아보기
                 </span>
-                <div className="absolute inset-0 bg-gradient-to-r from-yellow-300 to-yellow-400 opacity-0 hover:opacity-100 transition-opacity duration-300 rounded-2xl"></div>
               </button>
             </Link>
           </div>

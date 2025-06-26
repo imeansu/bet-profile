@@ -625,7 +625,7 @@ function Page() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50">
+    <div className="min-h-screen bg-white">
       {/* Header */}
       <div className="bg-white border-b border-gray-200 sticky top-0 z-10">
         <div className="max-w-4xl mx-auto px-4 py-4 flex items-center">
@@ -656,7 +656,7 @@ function Page() {
 
         {/* Step 1: 추구미 업로드 */}
         {step === 1 && (
-          <div className="max-w-md mx-auto px-4 py-8 space-y-8">
+          <div className="max-w-md mx-auto px-4 py-8 space-y-8 bg-white">
             {/* 메인 타이틀 */}
             <div className="text-center space-y-4">
               <h2 className="text-2xl font-bold text-gray-800">
@@ -743,7 +743,7 @@ function Page() {
             <div className="space-y-4">
               <div className="w-full">
                 <label className="block w-full cursor-pointer">
-                  <div className="w-full bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-500 hover:to-yellow-600 text-white font-bold py-4 px-6 rounded-2xl text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 flex items-center justify-center">
+                  <div className="w-full bg-[#96AFFF] text-white font-bold py-4 px-6 rounded-2xl text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 flex items-center justify-center">
                     <Upload className="w-5 h-5 mr-2" />
                     {aspirationImages.length > 0 ? `사진 추가하기 (${aspirationImages.length}/3)` : '사진 올리기 (최대 3장)'}
                   </div>
@@ -781,7 +781,7 @@ function Page() {
 
         {/* Step 2: 분석 중 */}
         {step === 2 && isAnalyzing && (
-          <div className="min-h-screen flex flex-col">
+          <div className="min-h-screen flex flex-col bg-white">
             {/* 헤더 */}
             <div className="flex items-center justify-between p-4 bg-white">
               <button 
@@ -831,7 +831,7 @@ function Page() {
 
         {/* Step 3: 추구미 분석 결과 */}
         {step === 3 && analysis && (
-          <div className="min-h-screen bg-gray-50">
+          <div className="min-h-screen bg-white">
             {/* 헤더 */}
             <div className="flex items-center justify-between p-4 bg-white border-b">
               <button 
@@ -860,8 +860,8 @@ function Page() {
               </div>
 
               {/* 메인 문구 */}
-              <div className="bg-gradient-to-r from-purple-400 to-purple-500 rounded-2xl p-6 text-center">
-                <h2 className="text-2xl font-bold text-white">
+              <div className="bg-[#E3EEFF] rounded-2xl p-6 text-center">
+                <h2 className="text-2xl font-bold text-black">
                   {analysis.main_message || "✨독특한 개성이 담긴 감성✨"}
                 </h2>
               </div>
@@ -941,69 +941,24 @@ function Page() {
 
               {/* 액션 버튼들 */}
               <div className="grid grid-cols-1 gap-4 action-buttons">
-                {analysis.recommended_action_buttons?.map((buttonText, index) => {
-                  if (buttonText.includes('프사 추천받기') || buttonText.includes('프사')) {
-                    return (
-                      <button
-                        key={index}
-                        onClick={() => setStep(4)}
-                        className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-bold py-4 px-6 rounded-2xl text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
-                      >
-                        {buttonText}
-                      </button>
-                    );
-                  } else if (buttonText.includes('결과 공유') || buttonText.includes('공유')) {
-                    return (
-                      <button
-                        key={index}
-                        onClick={handleShareResult}
-                        className="w-full bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white font-bold py-4 px-6 rounded-2xl text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
-                      >
-                        {buttonText}
-                      </button>
-                    );
-                  } else if (buttonText.includes('이미지로 저장') || buttonText.includes('저장')) {
-                    return (
-                      <button
-                        key={index}
-                        onClick={handleSaveAsImage}
-                        className="w-full bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white font-bold py-4 px-6 rounded-2xl text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
-                      >
-                        {buttonText}
-                      </button>
-                    );
-                  } else {
-                    return (
-                      <button
-                        key={index}
-                        className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-bold py-4 px-6 rounded-2xl text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
-                      >
-                        {buttonText}
-                      </button>
-                    );
-                  }
-                }) || (
-                  <>
-                    <button 
-                      onClick={handleShareResult}
-                      className="w-full bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white font-bold py-4 px-6 rounded-2xl text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
-                    >
-                      결과 공유하기
-                    </button>
-                    <button 
-                      onClick={() => setStep(4)}
-                      className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-bold py-4 px-6 rounded-2xl text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
-                    >
-                      프사 추천받기
-                    </button>
-                    <button 
-                      onClick={handleSaveAsImage}
-                      className="w-full bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white font-bold py-4 px-6 rounded-2xl text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
-                    >
-                      이미지로 저장
-                    </button>
-                  </>
-                )}
+                <button
+                  onClick={() => setStep(4)}
+                  className="w-full bg-[#8C9EFF] text-white font-bold py-4 px-6 rounded-2xl text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
+                >
+                  프사 추천받기
+                </button>
+                <button
+                  onClick={handleShareResult}
+                  className="w-full bg-[#DCEAFF] text-black font-bold py-4 px-6 rounded-2xl text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
+                >
+                  결과 공유하기
+                </button>
+                <button
+                  onClick={handleSaveAsImage}
+                  className="w-full bg-[#DCEAFF] text-black font-bold py-4 px-6 rounded-2xl text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
+                >
+                  이미지로 저장
+                </button>
               </div>
             </div>
           </div>
@@ -1011,7 +966,7 @@ function Page() {
 
         {/* Step 4: 프로필 사진 업로드 */}
         {step === 4 && (
-          <div className="min-h-screen bg-gray-50">
+          <div className="min-h-screen bg-white">
             {/* 헤더 */}
             <div className="flex items-center justify-between p-4 bg-white border-b">
               <button 
@@ -1105,7 +1060,7 @@ function Page() {
                 {profileImages.length === 0 ? (
                   <>
                     <label className="block w-full cursor-pointer">
-                      <div className="w-full bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-500 hover:to-yellow-600 text-white font-bold py-4 px-6 rounded-2xl text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 flex items-center justify-center">
+                      <div className="w-full bg-[#D9C8FF] text-white font-bold py-4 px-6 rounded-2xl text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 flex items-center justify-center">
                         <Camera className="w-5 h-5 mr-2" />
                         사진 올리기 (최대 1장)
                       </div>
@@ -1147,7 +1102,7 @@ function Page() {
 
         {/* Step 5: 프로필 분석 로딩 화면 */}
         {step === 5 && (
-          <div className="min-h-screen flex flex-col">
+          <div className="min-h-screen flex flex-col bg-white">
             {/* 헤더 */}
             <div className="flex items-center justify-between p-4 bg-white">
               <button 
@@ -1200,7 +1155,7 @@ function Page() {
 
         {/* Step 6: 프로필 분석 결과 */}
         {step === 6 && profileAnalysis && (
-          <div className="min-h-screen bg-gray-100">
+          <div className="min-h-screen bg-white">
             {/* 헤더 */}
             <div className="flex items-center justify-between p-4 bg-white">
               <button 
@@ -1499,7 +1454,7 @@ function Page() {
                           document.body.removeChild(link);
                         });
                       }}
-                      className="w-full bg-yellow-400 hover:bg-yellow-500 text-black font-bold py-4 px-6 rounded-2xl text-lg transition-colors"
+                      className="w-full bg-[#8C9EFF] text-white font-bold py-4 px-6 rounded-2xl text-lg transition-colors"
                     >
                       배경 사진 저장하기
                     </button>
@@ -1537,8 +1492,8 @@ function Page() {
                     }}
                     className={`w-full font-bold py-4 px-6 rounded-2xl text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 ${
                       button.style === 'primary' 
-                        ? 'bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white'
-                        : 'bg-gray-200 hover:bg-gray-300 text-gray-700'
+                        ? 'bg-[#D4ADFA] text-white'
+                        : 'bg-[#E8E4E0] text-black'
                     }`}
                   >
                     {button.text}
@@ -1554,7 +1509,7 @@ function Page() {
                     setAspirationFiles([]);
                     setAspirationImages([]);
                   }}
-                  className="w-full bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium py-3 px-6 rounded-2xl transition-colors flex items-center justify-center"
+                  className="w-full bg-[#E8E4E0] text-black font-medium py-3 px-6 rounded-2xl transition-colors flex items-center justify-center"
                 >
                   <RotateCcw className="w-4 h-4 mr-2" />
                   처음부터 다시 시작하기
