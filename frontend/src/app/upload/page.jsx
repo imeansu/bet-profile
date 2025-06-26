@@ -21,6 +21,8 @@ function Page() {
   const [profileFiles, setProfileFiles] = useState([]);
   const [currentMessage, setCurrentMessage] = useState('');
   const [currentEmoji, setCurrentEmoji] = useState('');
+  const [chugumiAnalysis, setChugumiAnalysis] = useState(null);
+  const [isDetailedInterpretationExpanded, setIsDetailedInterpretationExpanded] = useState(false);
 
   // 결과 화면 캡쳐를 위한 ref
   const resultRef = useRef(null);
@@ -1101,7 +1103,7 @@ function Page() {
                     
                     <button 
                       onClick={() => setProfileFile(null)}
-                      className="w-full bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium py-3 px-6 rounded-2xl transition-colors flex items-center justify-center"
+                      className="w-full bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium py-3 px-6 rounded-2xl transition-colors"
                     >
                       <RotateCcw className="w-4 h-4 mr-2" />
                       다른 사진으로 변경
@@ -1299,33 +1301,96 @@ function Page() {
                 </div>
               </div>
 
-              {/* AI 한마디 */}
-              <div className="bg-gradient-to-r from-purple-500 to-pink-500 rounded-2xl p-6 text-white text-center">
-                <div className="text-2xl mb-2">✨</div>
-                <p className="text-lg font-medium">
-                  "{profileAnalysis.ai_comment}"
-                </p>
+              {/* 추구미와의 관계 요약 */}
+              <div className="bg-white rounded-2xl p-6 space-y-4">
+                <div className="border-l-4 border-purple-500 pl-4">
+                  <p className="text-lg font-medium text-gray-800">
+                    {profileAnalysis.profile_vs_chugumi}
+                  </p>
+                </div>
+
+                {/* 감성 해석 더보기 */}
+                <div className="space-y-3">
+                  <button
+                    onClick={() => setIsDetailedInterpretationExpanded(!isDetailedInterpretationExpanded)}
+                    className="w-full text-center text-gray-600 font-medium py-2 border-t border-gray-200 flex items-center justify-center space-x-2 hover:bg-gray-50 transition-colors"
+                  >
+                    <span>감성 해석 더보기</span>
+                    <span className={`transform transition-transform ${isDetailedInterpretationExpanded ? 'rotate-180' : ''}`}>
+                      ∨
+                    </span>
+                  </button>
+
+                  {/* 접을 수 있는 상세 해석 */}
+                  {isDetailedInterpretationExpanded && profileAnalysis.detailed_interpretation && (
+                    <div className="space-y-3 pt-3">
+                      {profileAnalysis.detailed_interpretation.map((interpretation, index) => (
+                        <div key={index} className="flex items-start space-x-3">
+                          <div className="w-2 h-2 bg-gray-400 rounded-full mt-2 flex-shrink-0"></div>
+                          <p className="text-gray-700 text-sm">{interpretation}</p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* 그래서, 할까 말까? */}
+                {profileAnalysis.comprehensive_evaluation && (
+                  <div className="space-y-4 border-t border-gray-200 pt-4">
+                    <h4 className="text-lg font-semibold text-gray-800">그래서, 할까 말까?</h4>
+                    
+                    <div className="space-y-3">
+                      {/* 추구미 도달도 */}
+                      <div className="flex items-center space-x-3 bg-red-50 rounded-lg p-3">
+                        <div className="text-lg">📍</div>
+                        <div className="flex-1">
+                          <span className="font-medium text-red-800">추구미 도달도</span>
+                          <div className="text-sm text-red-700">
+                            ✅ {profileAnalysis.comprehensive_evaluation.chugumi_achievement}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* 분위기 일치도 */}
+                      <div className="flex items-center space-x-3 bg-orange-50 rounded-lg p-3">
+                        <div className="text-lg">🏷️</div>
+                        <div className="flex-1">
+                          <span className="font-medium text-orange-800">분위기 일치도</span>
+                          <div className="text-sm text-orange-700">
+                            😊 {profileAnalysis.comprehensive_evaluation.mood_compatibility}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* 조정 팁 */}
+                      <div className="flex items-center space-x-3 bg-gray-50 rounded-lg p-3">
+                        <div className="text-lg">🔧</div>
+                        <div className="flex-1">
+                          <span className="font-medium text-gray-800">조정 팁</span>
+                          <div className="text-sm text-gray-700">
+                            {profileAnalysis.comprehensive_evaluation.adjustment_tip}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
 
-              {/* 세부 피드백 */}
-              {profileAnalysis.detailed_feedback && (
-                <div className="bg-white rounded-2xl p-6 shadow-sm">
-                  <h3 className="text-lg font-semibold text-gray-800 mb-4">💡 개선 포인트</h3>
-                  <div className="space-y-3">
-                    {profileAnalysis.detailed_feedback.map((feedback, index) => (
-                      <div key={index} className="flex items-start space-x-3">
-                        <div className="w-2 h-2 bg-purple-400 rounded-full mt-2 flex-shrink-0"></div>
-                        <p className="text-gray-700">{feedback}</p>
-                      </div>
-                    ))}
-                  </div>
+              {/* AI 한마디 */}
+              <div className="bg-white rounded-2xl p-6 space-y-3">
+                <h4 className="text-lg font-semibold text-gray-800">AI 한마디</h4>
+                <div className="border-l-4 border-blue-500 pl-4">
+                  <p className="text-gray-700 italic">
+                    "{profileAnalysis.ai_comment}"
+                  </p>
                 </div>
-              )}
+              </div>
 
               {/* 추천 배경 */}
               {profileAnalysis.recommended_backgrounds && (
                 <div className="bg-white rounded-2xl p-6 shadow-sm">
-                  <h3 className="text-lg font-semibold text-gray-800 mb-4">🌟 추천 배경</h3>
+                  <h4 className="text-lg font-semibold text-gray-800 mb-4">🌟 추천 배경</h4>
                   <div className="grid grid-cols-2 gap-3">
                     {profileAnalysis.recommended_backgrounds.map((bg, index) => (
                       <div key={index} className="bg-gray-50 rounded-xl p-3 text-center">
