@@ -384,58 +384,134 @@ function Page() {
 
         {/* Step 3: 추구미 분석 결과 */}
         {step === 3 && analysis && (
-          <div className="space-y-8">
-            <div className="text-center space-y-4">
-              <div className="w-32 h-32 mx-auto">
-                <img src={aspirationImage} alt="추구미" className="w-full h-full object-cover rounded-2xl" />
-              </div>
-              <h2 className="text-2xl font-bold text-gray-800">당신의 추구미 분석 결과</h2>
+          <div className="min-h-screen bg-gray-50">
+            {/* 헤더 */}
+            <div className="flex items-center justify-between p-4 bg-white border-b">
+              <button 
+                onClick={() => setStep(2)}
+                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+              >
+                <ArrowLeft className="w-6 h-6 text-gray-600" />
+              </button>
+              <h1 className="text-lg font-semibold text-gray-800">당신의 추구미는...</h1>
+              <div className="w-10"></div>
             </div>
 
-            <div className="bg-white rounded-2xl p-6 shadow-lg border border-purple-100">
-              <div className="grid md:grid-cols-2 gap-6">
-                <div>
-                  <h3 className="text-lg font-semibold mb-3 flex items-center">
-                    <Palette className="w-5 h-5 mr-2 text-purple-500" />
-                    스타일 특성
-                  </h3>
-                  <div className="space-y-2">
-                    <div className="flex flex-wrap gap-2">
-                      {Array.isArray(analysis.keywords) && analysis.keywords.map((keyword, index) => (
-                        <span key={index} className="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-sm font-medium">
-                          {keyword}
-                        </span>
-                      ))}
-                    </div>
-                    <p className="text-gray-600 mt-3">{analysis.impression}</p>
+            <div className="px-4 py-6 space-y-6">
+              {/* 업로드된 이미지들 */}
+              <div className="grid grid-cols-3 gap-3">
+                {aspirationImages.slice(0, 3).map((img, index) => (
+                  <div key={index} className="aspect-square">
+                    <img 
+                      src={img} 
+                      alt={`추구미 ${index + 1}`} 
+                      className="w-full h-full object-cover rounded-xl"
+                    />
+                  </div>
+                ))}
+              </div>
+
+              {/* 메인 문구 */}
+              <div className="bg-gradient-to-r from-purple-400 to-purple-500 rounded-2xl p-6 text-center">
+                <h2 className="text-2xl font-bold text-white">
+                  잔잔한 도시형 감성 ✨
+                </h2>
+              </div>
+
+              {/* 추구미 프로필 */}
+              <div className="bg-white rounded-2xl p-6 space-y-4">
+                <div className="flex items-start space-x-4">
+                  <div className="w-16 h-16 bg-gradient-to-br from-purple-400 to-pink-400 rounded-full flex items-center justify-center text-2xl">
+                    😊
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-lg font-semibold text-gray-800 mb-2">
+                      당신은 차분한 취향을 가진 사람이군요 😊
+                    </h3>
+                    <p className="text-gray-600 leading-relaxed">
+                      도시적이면서도 편안한 분위기를 추구하는 당신은 자연스러운 색감과 
+                      심플한 디자인을 선호합니다. 과하지 않으면서도 세련된 감각이 돋보이는 
+                      스타일이 특징입니다.
+                    </p>
                   </div>
                 </div>
-                
-                <div>
-                  <h3 className="text-lg font-semibold mb-3 flex items-center">
-                    <Star className="w-5 h-5 mr-2 text-purple-500" />
-                    핵심 포인트
-                  </h3>
-                  <ul className="space-y-2">
-                    {Array.isArray(analysis.keyFeatures) && analysis.keyFeatures.map((feature, index) => (
-                      <li key={index} className="flex items-center text-gray-600">
-                        <div className="w-2 h-2 bg-purple-500 rounded-full mr-3"></div>
-                        {feature}
-                      </li>
-                    ))}
-                  </ul>
+              </div>
+
+              {/* 한 마디로 말하면 */}
+              <div className="bg-white rounded-2xl p-6 space-y-4">
+                <h3 className="text-lg font-semibold text-gray-800 flex items-center">
+                  <span className="mr-2">💭</span>
+                  한 마디로 말하면...
+                </h3>
+                <div className="space-y-3">
+                  <div className="flex items-start space-x-3">
+                    <span className="text-purple-500 font-bold">•</span>
+                    <p className="text-gray-700">"감성 셔츠 하나로 사계절 우려먹는 남자"</p>
+                  </div>
+                  <div className="flex items-start space-x-3">
+                    <span className="text-purple-500 font-bold">•</span>
+                    <p className="text-gray-700">"말수는 없는데 눈빛으로 소통하는 타입"</p>
+                  </div>
+                  <div className="flex items-start space-x-3">
+                    <span className="text-purple-500 font-bold">•</span>
+                    <p className="text-gray-700">"말은 없어도 눈빛은 많은 사람"</p>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <div className="text-center">
-              <button
-                onClick={() => setStep(4)}
-                className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-8 py-3 rounded-xl font-medium hover:shadow-lg transition-all flex items-center mx-auto"
-              >
-                내 프로필 사진 분석하기
-                <ArrowRight className="w-5 h-5 ml-2" />
-              </button>
+              {/* 행동으로 말하면 */}
+              <div className="bg-white rounded-2xl p-6 space-y-4">
+                <h3 className="text-lg font-semibold text-gray-800 flex items-center">
+                  <span className="mr-2">🎬</span>
+                  행동으로 말하면...
+                </h3>
+                <div className="space-y-3">
+                  <div className="flex items-start space-x-3">
+                    <span className="text-purple-500 font-bold">•</span>
+                    <p className="text-gray-700">"책 읽다 말고 창밖 보기"</p>
+                  </div>
+                  <div className="flex items-start space-x-3">
+                    <span className="text-purple-500 font-bold">•</span>
+                    <p className="text-gray-700">"괜히 블루투스 이어폰 하나만 끼고 걷기"</p>
+                  </div>
+                  <div className="flex items-start space-x-3">
+                    <span className="text-purple-500 font-bold">•</span>
+                    <p className="text-gray-700">"블로그에 영화 감상 한 줄 쓰기"</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* AI 코멘트 인용구 */}
+              <div className="bg-gradient-to-r from-gray-100 to-gray-50 rounded-2xl p-6 border-l-4 border-purple-400">
+                <div className="text-center">
+                  <p className="text-lg font-medium text-gray-800 italic leading-relaxed">
+                    "모던하면서도 따뜻한 감성이 돋보이는 당신,<br />
+                    특별하지 않아도 늘 기억에 남는 사람이겠어요."
+                  </p>
+                  <div className="mt-4 text-sm text-gray-500">
+                    - AI의 한마디 -
+                  </div>
+                </div>
+              </div>
+
+              {/* 버튼들 */}
+              <div className="space-y-3 pt-4">
+                <button className="w-full bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-500 hover:to-yellow-600 text-white font-bold py-4 px-6 rounded-2xl text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300">
+                  결과 공유하기
+                </button>
+                
+                <div className="grid grid-cols-2 gap-3">
+                  <button 
+                    onClick={() => setStep(4)}
+                    className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-semibold py-3 px-4 rounded-xl shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-300"
+                  >
+                    프사 추천받기
+                  </button>
+                  <button className="bg-gradient-to-r from-gray-400 to-gray-500 hover:from-gray-500 hover:to-gray-600 text-white font-semibold py-3 px-4 rounded-xl shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-300">
+                    이미지로 저장
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         )}
