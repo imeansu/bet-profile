@@ -9,6 +9,9 @@ function Page() {
   const [aspirationImages, setAspirationImages] = useState([]);
   const [profileImages, setProfileImages] = useState([]);
   const [analysis, setAnalysis] = useState(null);
+  const [profileAnalysis, setProfileAnalysis] = useState(null);
+  const [isAnalyzingProfile, setIsAnalyzingProfile] = useState(false);
+  const [profileFile, setProfileFile] = useState(null);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [editedImageUrl, setEditedImageUrl] = useState(null);
@@ -70,12 +73,18 @@ function Page() {
   }, [isAnalyzing]);
 
   const analyzeAspiration = async () => {
+    if (aspirationFiles.length === 0) {
+      alert('먼저 이미지를 업로드해주세요.');
+      return;
+    }
+
     setIsAnalyzing(true);
+    setCurrentMessage('분석을 시작합니다...');
+    setCurrentEmoji('🔍');
+
     try {
       const formData = new FormData();
-      
-      // Add all aspiration files to FormData
-      aspirationFiles.forEach((file, index) => {
+      aspirationFiles.forEach((file) => {
         formData.append('images', file);
       });
 
@@ -84,45 +93,63 @@ function Page() {
         body: formData,
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || '분석 실패');
-      }
-
       const data = await response.json();
-      console.log('Analysis result:', data);
-      setAnalysis(data);
-      setStep(3);
+
+      if (response.ok) {
+        setAnalysis(data);
+        setStep(3);
+      } else {
+        alert(data.error || '분석 중 오류가 발생했습니다.');
+      }
     } catch (error) {
-      console.error('Analysis error:', error);
-      alert(`AI 분석에 실패했습니다: ${error.message}`);
+      console.error('분석 오류:', error);
+      alert('분석 중 오류가 발생했습니다.');
     } finally {
       setIsAnalyzing(false);
     }
   };
 
   const analyzeProfile = async () => {
-    setIsAnalyzing(true);
+    if (!profileFile) {
+      alert('프로필 사진을 업로드해주세요.');
+      return;
+    }
+
+    if (!analysis) {
+      alert('먼저 추구미 분석을 완료해주세요.');
+      return;
+    }
+
+    setIsAnalyzingProfile(true);
+    setStep(5); // Step 5로 이동 (로딩 화면)
+    setCurrentMessage('프로필 사진 분석을 시작합니다...');
+    setCurrentEmoji('📸');
+
     try {
       const formData = new FormData();
-      if (aspirationFile) {
-        formData.append('aspiration', aspirationFile);
-      }
-      profileFiles.forEach((file) => {
-        formData.append('profiles', file);
-      });
-      const response = await fetch('/analyze-profile', {
+      formData.append('profileImage', profileFile);
+      formData.append('aspirationAnalysis', JSON.stringify(analysis));
+
+      const response = await fetch('http://localhost:4000/analyze-profile', {
         method: 'POST',
         body: formData,
       });
-      if (!response.ok) throw new Error('분석 실패');
+
       const data = await response.json();
-      setAnalysis(data);
-      setStep(5);
+
+      if (response.ok) {
+        setProfileAnalysis(data);
+        setStep(6); // 결과 화면으로 이동
+      } else {
+        alert(data.error || '프로필 분석 중 오류가 발생했습니다.');
+        setStep(4); // 오류 시 업로드 화면으로 돌아가기
+      }
     } catch (error) {
-      alert('프로필 분석에 실패했습니다.');
+      console.error('프로필 분석 오류:', error);
+      alert('프로필 분석 중 오류가 발생했습니다.');
+      setStep(4); // 오류 시 업로드 화면으로 돌아가기
     } finally {
-      setIsAnalyzing(false);
+      setIsAnalyzingProfile(false);
     }
   };
 
@@ -144,6 +171,7 @@ function Page() {
       const urls = files.map(file => URL.createObjectURL(file));
       setProfileImages(urls);
       setProfileFiles(files);
+      setProfileFile(files[0]);
       // 바로 다음 단계로 넘어가지 않고 미리보기만 표시
     }
   };
@@ -167,7 +195,7 @@ function Page() {
       const data = await res.json();
       setEditedImageUrl(data.editedImageUrl);
       setImprovedScore(data.improvedScore);
-      setStep(6);
+      setStep(7);
     } catch (error) {
       alert('AI 이미지 편집에 실패했습니다.');
     } finally {
@@ -584,12 +612,12 @@ function Page() {
         <div className="mb-8">
           <div className="flex items-center justify-between mb-2">
             <span className="text-sm font-medium text-gray-600">진행 상황</span>
-            <span className="text-sm text-gray-500">{step}/6 단계</span>
+            <span className="text-sm text-gray-500">{step}/7 단계</span>
           </div>
           <div className="w-full bg-gray-200 rounded-full h-2">
             <div 
               className="bg-gradient-to-r from-purple-500 to-pink-500 h-2 rounded-full transition-all duration-500"
-              style={{ width: `${(step / 6) * 100}%` }}
+              style={{ width: `${(step / 7) * 100}%` }}
             ></div>
           </div>
         </div>
@@ -834,7 +862,7 @@ function Page() {
               {/* 프로필 특성 */}
               {analysis.profile_traits && (
                 <div className="bg-white rounded-2xl p-6 space-y-4">
-                  <h3 className="text-lg font-semibold text-gray-800 flex items-center">
+                  <h3 className="text-lg font-semibold text-gray-800 mb-3 flex items-center">
                     <span className="mr-2">👤</span>
                     프로필 특성
                   </h3>
@@ -851,7 +879,7 @@ function Page() {
 
               {/* 행동으로 말하면 */}
               <div className="bg-white rounded-2xl p-6 space-y-4">
-                <h3 className="text-lg font-semibold text-gray-800 flex items-center">
+                <h3 className="text-lg font-semibold text-gray-800 mb-3 flex items-center">
                   <span className="mr-2">🎬</span>
                   행동으로 말하면...
                 </h3>
@@ -950,7 +978,7 @@ function Page() {
         )}
 
         {/* Step 4: 프로필 사진 업로드 */}
-        {step === 4 && !isAnalyzing && (
+        {step === 4 && (
           <div className="min-h-screen bg-gray-50">
             {/* 헤더 */}
             <div className="flex items-center justify-between p-4 bg-white border-b">
@@ -1014,9 +1042,9 @@ function Page() {
                   <div className="flex-1 text-center space-y-3">
                     <h3 className="text-lg font-semibold text-gray-800">프사 후보</h3>
                     <div className="aspect-square bg-gray-200 rounded-2xl overflow-hidden">
-                      {profileImages.length > 0 ? (
+                      {profileFile ? (
                         <img 
-                          src={profileImages[0]} 
+                          src={URL.createObjectURL(profileFile)} 
                           alt="프사 후보" 
                           className="w-full h-full object-cover"
                         />
@@ -1064,39 +1092,19 @@ function Page() {
                 ) : (
                   <>
                     <button 
-                      onClick={() => {
-                        setIsAnalyzing(true);
-                        // 3초 후 분석 완료로 시뮬레이션
-                        setTimeout(() => {
-                          setIsAnalyzing(false);
-                          // 더미 분석 결과 설정
-                          setAnalysis({
-                            results: [
-                              {
-                                title: "프로필 사진 분석 결과",
-                                score: 85,
-                                improvement: "배경을 더 단순하게 하고 조명을 개선하면 더 좋을 것 같아요!"
-                              }
-                            ]
-                          });
-                          setStep(5);
-                        }, 3000);
-                      }}
-                      className="w-full bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white font-bold py-4 px-6 rounded-2xl text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
+                      onClick={analyzeProfile}
+                      className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-bold py-4 px-6 rounded-2xl text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 flex items-center justify-center"
                     >
                       <Sparkles className="w-5 h-5 mr-2" />
-                      AI 분석 시작하기
+                      AI 프로필 분석 시작하기
                     </button>
                     
                     <button 
-                      onClick={() => {
-                        setProfileImages([]);
-                        setProfileFiles([]);
-                      }}
-                      className="w-full border-2 border-gray-300 hover:border-gray-400 text-gray-600 font-semibold py-3 px-4 rounded-xl transition-colors"
+                      onClick={() => setProfileFile(null)}
+                      className="w-full bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium py-3 px-6 rounded-2xl transition-colors flex items-center justify-center"
                     >
                       <RotateCcw className="w-4 h-4 mr-2" />
-                      다른 사진 선택하기
+                      다른 사진으로 변경
                     </button>
                   </>
                 )}
@@ -1105,19 +1113,22 @@ function Page() {
           </div>
         )}
 
-        {/* Step 4: 분석 중 */}
-        {step === 4 && isAnalyzing && (
+        {/* Step 5: 프로필 분석 로딩 화면 */}
+        {step === 5 && (
           <div className="min-h-screen flex flex-col">
             {/* 헤더 */}
             <div className="flex items-center justify-between p-4 bg-white">
               <button 
-                onClick={() => setIsAnalyzing(false)}
+                onClick={() => {
+                  setIsAnalyzingProfile(false);
+                  setStep(4);
+                }}
                 className="p-2 hover:bg-gray-100 rounded-full transition-colors"
               >
                 <ArrowLeft className="w-6 h-6 text-gray-600" />
               </button>
-              <h1 className="text-lg font-semibold text-gray-800">프사 분석</h1>
-              <div className="w-10"></div> {/* 균형을 위한 빈 공간 */}
+              <h1 className="text-lg font-semibold text-gray-800">프로필 분석 중</h1>
+              <div className="w-10"></div>
             </div>
 
             {/* 메인 콘텐츠 */}
@@ -1128,26 +1139,26 @@ function Page() {
                   프로필 사진을 분석 중이에요...
                 </h2>
                 <p className="text-gray-500 text-lg">
-                  AI가 이미지를 꼼꼼히 분석하고 있어요
+                  AI가 추구미와 매칭도를 분석하고 있어요
                 </p>
               </div>
 
               {/* 진행 메시지 박스 */}
               <div className="w-full max-w-sm">
-                <div className="bg-gray-100 rounded-2xl p-6 text-center space-y-4">
+                <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl p-6 text-center space-y-4">
                   {/* 이모지 */}
                   <div className="text-4xl animate-bounce">
-                    {currentEmoji}
+                    📸
                   </div>
                   
                   {/* 진행 메시지 */}
                   <p className="text-lg font-medium text-gray-700">
-                    {currentMessage}
+                    프로필 감성 체크 중...
                   </p>
                   
                   {/* 로딩 바 */}
                   <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div className="bg-gradient-to-r from-purple-500 to-pink-500 h-2 rounded-full animate-pulse" style={{width: '60%'}}></div>
+                    <div className="bg-gradient-to-r from-purple-500 to-pink-500 h-2 rounded-full animate-pulse" style={{width: '75%'}}></div>
                   </div>
                 </div>
               </div>
@@ -1155,9 +1166,9 @@ function Page() {
           </div>
         )}
 
-        {/* Step 5: 분석 결과 및 피드백 */}
-        {step === 5 && analysis?.results && (
-          <div className="min-h-screen bg-gray-50">
+        {/* Step 6: 프로필 분석 결과 */}
+        {step === 6 && profileAnalysis && (
+          <div className="min-h-screen bg-gradient-to-br from-purple-50 to-pink-50">
             {/* 헤더 */}
             <div className="flex items-center justify-between p-4 bg-white border-b border-gray-200">
               <button 
@@ -1166,137 +1177,126 @@ function Page() {
               >
                 <ArrowLeft className="w-6 h-6 text-gray-600" />
               </button>
-              <h1 className="text-lg font-semibold text-gray-800">당신의 프사는...</h1>
+              <h1 className="text-lg font-semibold text-gray-800">프로필 분석 결과</h1>
               <div className="w-10"></div>
             </div>
 
             <div className="p-6 space-y-6">
-              {/* 메인 프로필 이미지 */}
-              <div className="flex justify-center">
-                <div className="w-32 h-32 rounded-2xl overflow-hidden shadow-lg">
-                  <img src={profileImages[0]} alt="프로필 사진" className="w-full h-full object-cover" />
+              {/* 메인 제목과 거리 */}
+              <div className="text-center space-y-4">
+                <div className="text-4xl mb-2">
+                  {profileAnalysis.distance_to_chugumi <= 10 ? '💯' : 
+                   profileAnalysis.distance_to_chugumi <= 20 ? '😊' : 
+                   profileAnalysis.distance_to_chugumi <= 30 ? '😐' : '🤔'}
                 </div>
+                <h2 className="text-2xl font-bold text-gray-800">
+                  우리 사이 거리는 <span className="text-purple-600">{profileAnalysis.distance_to_chugumi}m</span> 🚶
+                </h2>
+                <p className="text-gray-600">
+                  {profileAnalysis.distance_evaluation}
+                </p>
               </div>
 
-              {/* 추구미 거리 표시 */}
-              <div className="bg-purple-50 rounded-2xl p-4 text-center">
-                <div className="flex items-center justify-center space-x-2 mb-2">
-                  <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
-                  <span className="text-purple-700 font-medium">추구미까지 12m 남았어요</span>
-                </div>
-                <div className="text-sm text-purple-600">rei (12m)</div>
-                <div className="text-xs text-purple-500 mt-1">위치: 추구미역 2번 출구 근처</div>
+              {/* AI 총평 */}
+              <div className="bg-white rounded-2xl p-6 shadow-sm">
+                <h3 className="text-lg font-semibold text-gray-800 mb-3 flex items-center">
+                  <Sparkles className="w-5 h-5 mr-2 text-purple-500" />
+                  AI 총평
+                </h3>
+                <p className="text-gray-700 leading-relaxed">
+                  {profileAnalysis.ai_comment}
+                </p>
               </div>
 
-              {/* 추구미 설명 */}
-              <div className="bg-white rounded-2xl p-5 shadow-sm">
-                <h3 className="text-lg font-bold text-gray-800 mb-3">🎯 추구미</h3>
-                <div className="space-y-2">
-                  <p className="text-gray-800 font-medium">조용한 온기를 가진 도시형 감성.</p>
-                  <p className="text-sm text-gray-600">햇살과 나뭇잎이 있는 오후, 말을 아끼는 감각형 인간</p>
-                </div>
+              {/* 추구미 요약 */}
+              <div className="bg-white rounded-2xl p-6 shadow-sm">
+                <h3 className="text-lg font-semibold text-gray-800">🎯 내 추구미</h3>
+                <p className="text-gray-700 leading-relaxed">
+                  {profileAnalysis.chugumi_summary}
+                </p>
               </div>
 
-              {/* 프사 분석 */}
-              <div className="bg-white rounded-2xl p-5 shadow-sm">
-                <h3 className="text-lg font-bold text-gray-800 mb-4">📊 프사 분석 (현재 느낌)</h3>
+              {/* 현재 프로필 분석 */}
+              <div className="bg-white rounded-2xl p-6 shadow-sm">
+                <h3 className="text-lg font-semibold text-gray-800 mb-3">📸 현재 프사 분석</h3>
+                <p className="text-gray-700 leading-relaxed">
+                  {profileAnalysis.current_profile_analysis}
+                </p>
+              </div>
+
+              {/* 세부 피드백 */}
+              <div className="bg-white rounded-2xl p-6 shadow-sm">
+                <h3 className="text-lg font-semibold text-gray-800 mb-4">💡 개선 포인트</h3>
                 <div className="space-y-3">
-                  <div className="flex justify-between items-center p-3 bg-gray-50 rounded-xl">
-                    <span className="text-sm font-medium text-gray-700">조명</span>
-                    <span className="text-xs text-gray-600 text-right flex-1 ml-4">어두운 조명 속 포인트 조명 + 약간의 블루빛<br/>차분하고 몽환적인 무드</span>
-                  </div>
-                  <div className="flex justify-between items-center p-3 bg-gray-50 rounded-xl">
-                    <span className="text-sm font-medium text-gray-700">의상 톤</span>
-                    <span className="text-xs text-gray-600 text-right flex-1 ml-4">딥한 블랙 & 뉴트럴 컬러<br/>정제되고 차분함</span>
-                  </div>
-                  <div className="flex justify-between items-center p-3 bg-gray-50 rounded-xl">
-                    <span className="text-sm font-medium text-gray-700">표정</span>
-                    <span className="text-xs text-gray-600 text-right flex-1 ml-4">자연스럽게 미소<br/>적당한 개방성과 편안함</span>
-                  </div>
-                  <div className="flex justify-between items-center p-3 bg-gray-50 rounded-xl">
-                    <span className="text-sm font-medium text-gray-700">배경 연출</span>
-                    <span className="text-xs text-gray-600 text-right flex-1 ml-4">드레이프 천+ 조명 + 그래픽<br/>살짝 꿈결 같은 비일상</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* 차이/포인트 설명 */}
-              <div className="bg-blue-50 rounded-2xl p-5">
-                <h3 className="text-lg font-bold text-blue-800 mb-3">💡 이 사진이 딱 맞는 이유</h3>
-                <div className="space-y-3 text-sm text-blue-700">
-                  <p>• 지금 프사는 <span className="font-bold">'잔잔한 자기감각'</span>이라는 추구미와 거의 가까워.</p>
-                  <p>• 특히 조명이 무겁지 않고, 표정도 부드럽게 살아 있어 딱딱하거나 인위적이지 않음.</p>
-                  <p>• 다만 몽환성이 살짝 더 부각되면서 "햇살과 잎사귀 아래"의 내추럴함보다는 조금 더 연출된 미감 쪽에 가까움.</p>
-                  <p>• 요약하자면 <span className="font-bold">"도시적 감성과 자연스러운 온기의 조화"</span>야.</p>
-                </div>
-              </div>
-
-              {/* 최종 진단 */}
-              <div className="bg-green-50 rounded-2xl p-5">
-                <h3 className="text-lg font-bold text-green-800 mb-3">✅ 최종 진단</h3>
-                <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <span className="text-green-700 font-medium">추구미 도달도</span>
-                    <span className="text-green-600 font-bold">근접</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-green-700 font-medium">감정 분위기 일치도</span>
-                    <span className="text-green-600 font-bold">높은 편 (부드럽고 따뜻함)</span>
-                  </div>
-                  <div className="mt-3 p-3 bg-green-100 rounded-xl">
-                    <p className="text-green-800 font-medium text-xs">💡 조정 팁</p>
-                    <p className="text-green-700 text-xs mt-1">배경을 자연광 중심 or 식물/베이지 톤으로 바꾸면 더 좋을 수 있음</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* 함께하면 더 좋아요 */}
-              <div className="bg-white rounded-2xl p-5 shadow-sm">
-                <h3 className="text-lg font-bold text-gray-800 mb-4">🎨 함께하면 더 좋아요</h3>
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
-                    <span className="text-sm text-gray-700">이 사진+추구미와 어울리는 배경 사진</span>
-                    <div className="flex space-x-2">
-                      <button className="px-3 py-1 bg-purple-100 text-purple-700 text-xs rounded-lg font-medium">
-                        저장하기
-                      </button>
-                      <button className="px-3 py-1 bg-purple-500 text-white text-xs rounded-lg font-medium">
-                        배경사진 설정하기
-                      </button>
+                  {profileAnalysis.detailed_feedback?.map((feedback, index) => (
+                    <div key={index} className="flex items-start space-x-3">
+                      <div className="w-2 h-2 bg-purple-400 rounded-full mt-2 flex-shrink-0"></div>
+                      <p className="text-gray-700">{feedback}</p>
                     </div>
-                  </div>
-                  <div className="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
-                    <span className="text-sm text-gray-700">이 사진+추구미와 어울리는 상태 메시지</span>
-                    <div className="flex space-x-2">
-                      <button className="px-3 py-1 bg-blue-100 text-blue-700 text-xs rounded-lg font-medium">
-                        복사하기
-                      </button>
-                      <button className="px-3 py-1 bg-blue-500 text-white text-xs rounded-lg font-medium">
-                        상태메시지 설정하기
-                      </button>
-                    </div>
-                  </div>
+                  ))}
                 </div>
               </div>
 
-              {/* 하단 버튼들 */}
-              <div className="space-y-3 pt-4">
-                <button className="w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold py-4 px-6 rounded-2xl text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300">
-                  결과 공유하기
-                </button>
+              {/* 추천 배경 */}
+              {profileAnalysis.recommended_backgrounds && (
+                <div className="bg-white rounded-2xl p-6 shadow-sm">
+                  <h3 className="text-lg font-semibold text-gray-800 mb-4">🌟 추천 배경</h3>
+                  <div className="grid grid-cols-2 gap-3">
+                    {profileAnalysis.recommended_backgrounds.map((bg, index) => (
+                      <div key={index} className="bg-gray-50 rounded-xl p-3 text-center">
+                        <p className="text-sm text-gray-700">{bg}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* 액션 버튼들 */}
+              <div className="space-y-4">
+                {profileAnalysis.action_buttons?.map((button, index) => (
+                  <button 
+                    key={index}
+                    onClick={() => {
+                      if (button.action === 'retry') {
+                        setStep(4);
+                        setProfileFile(null);
+                        setProfileAnalysis(null);
+                      } else if (button.action === 'share') {
+                        // 공유 기능 구현
+                        alert('공유 기능은 곧 추가될 예정입니다!');
+                      }
+                    }}
+                    className={`w-full font-bold py-4 px-6 rounded-2xl text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 ${
+                      button.style === 'primary' 
+                        ? 'bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white'
+                        : 'bg-gray-200 hover:bg-gray-300 text-gray-700'
+                    }`}
+                  >
+                    {button.text}
+                  </button>
+                ))}
+                
                 <button 
-                  onClick={() => setStep(1)}
-                  className="w-full border-2 border-purple-300 text-purple-600 font-semibold py-3 px-6 rounded-2xl hover:bg-purple-50 transition-colors"
+                  onClick={() => {
+                    setStep(1);
+                    setProfileFile(null);
+                    setProfileAnalysis(null);
+                    setAnalysis(null);
+                    setAspirationFiles([]);
+                    setAspirationImages([]);
+                  }}
+                  className="w-full bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium py-3 px-6 rounded-2xl transition-colors flex items-center justify-center"
                 >
-                  다시 추구미하기
+                  <RotateCcw className="w-4 h-4 mr-2" />
+                  처음부터 다시 시작하기
                 </button>
               </div>
             </div>
           </div>
         )}
 
-        {/* Step 6: AI 편집된 이미지 제안 */}
-        {step === 6 && (
+        {/* Step 7: AI 편집된 이미지 제안 */}
+        {step === 7 && (
           <div className="space-y-8">
             {isAnalyzing ? (
               <div className="text-center space-y-8">
