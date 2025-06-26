@@ -1417,19 +1417,108 @@ function Page() {
                 </div>
               </div>
 
-              {/* 추천 배경 */}
-              {profileAnalysis.recommended_backgrounds && (
-                <div className="bg-white rounded-2xl p-6 shadow-sm">
-                  <h4 className="text-lg font-semibold text-gray-800 mb-4">🌟 추천 배경</h4>
-                  <div className="grid grid-cols-2 gap-3">
-                    {profileAnalysis.recommended_backgrounds.map((bg, index) => (
-                      <div key={index} className="bg-gray-50 rounded-xl p-3 text-center">
-                        <p className="text-sm text-gray-700">{bg}</p>
-                      </div>
-                    ))}
-                  </div>
+              {/* 배경 이미지 생성 섹션 */}
+              <div className="bg-white rounded-2xl p-6 space-y-6">
+                <div className="text-center space-y-2">
+                  <h3 className="text-xl font-bold text-gray-800">이 분위기, 바로 설정해볼래요?</h3>
+                  <p className="text-gray-600">추구미에 딱맞는 배경 사진까지 뽑아왔어요</p>
                 </div>
-              )}
+
+                {/* 로딩 상태 */}
+                {isGeneratingBackgrounds && (
+                  <div className="text-center py-8">
+                    <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500 mb-4"></div>
+                    <p className="text-gray-600 mb-4">AI가 당신만의 배경을 만들고 있어요...</p>
+                  </div>
+                )}
+
+                {/* 생성된 배경 이미지들 */}
+                {generatedBackgrounds && generatedBackgrounds.length > 0 && (
+                  <div className="space-y-6">
+                    <div className="grid grid-cols-2 gap-4">
+                      {generatedBackgrounds.map((bg, index) => (
+                        <div key={index} className="space-y-3">
+                          <div className="text-center">
+                            <span className="inline-block bg-gray-100 px-3 py-1 rounded-full text-sm font-medium text-gray-700">
+                              {bg.label}
+                            </span>
+                          </div>
+                          
+                          <div className="relative bg-gray-100 rounded-2xl overflow-hidden aspect-[3/4]">
+                            <img 
+                              src={bg.url} 
+                              alt={`${bg.label} 배경`}
+                              className="w-full h-full object-cover"
+                            />
+                            
+                            {/* 프로필 사진 오버레이 */}
+                            <div className="absolute inset-0 flex items-center justify-center">
+                              <div className="w-16 h-16 rounded-full overflow-hidden border-4 border-white shadow-lg">
+                                {profileFile && (
+                                  <img 
+                                    src={URL.createObjectURL(profileFile)}
+                                    alt="프로필 미리보기"
+                                    className="w-full h-full object-cover"
+                                  />
+                                )}
+                              </div>
+                            </div>
+                            
+                            {/* "나" 텍스트 */}
+                            <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2">
+                              <span className="bg-white px-3 py-1 rounded-full text-sm font-bold text-gray-800 shadow-md">
+                                나
+                              </span>
+                            </div>
+                          </div>
+
+                          {/* 카톡에 반영하기 버튼 */}
+                          <button 
+                            onClick={() => {
+                              // 카카오톡 연동 기능 (향후 구현)
+                              alert('카카오톡 연동 기능은 곧 추가될 예정입니다!');
+                            }}
+                            className="w-full bg-black text-white font-medium py-3 px-4 rounded-2xl hover:bg-gray-800 transition-colors"
+                          >
+                            카톡에 반영하기
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* 배경 사진 저장하기 버튼 */}
+                    <button 
+                      onClick={() => {
+                        // 배경 이미지 저장 기능
+                        generatedBackgrounds.forEach((bg, index) => {
+                          const link = document.createElement('a');
+                          link.href = bg.url;
+                          link.download = `배경이미지_${bg.type}_${index + 1}.png`;
+                          document.body.appendChild(link);
+                          link.click();
+                          document.body.removeChild(link);
+                        });
+                      }}
+                      className="w-full bg-yellow-400 hover:bg-yellow-500 text-black font-bold py-4 px-6 rounded-2xl text-lg transition-colors"
+                    >
+                      배경 사진 저장하기
+                    </button>
+                  </div>
+                )}
+
+                {/* 재생성 버튼 (생성 완료 후 또는 실패 시) */}
+                {!isGeneratingBackgrounds && (generatedBackgrounds === null || generatedBackgrounds?.length === 0) && (
+                  <div className="text-center py-4">
+                    <p className="text-gray-600 mb-4">배경 이미지 생성에 실패했습니다.</p>
+                    <button 
+                      onClick={() => generateBackgrounds(profileAnalysis, analysis?.one_liner)}
+                      className="bg-purple-500 hover:bg-purple-600 text-white font-medium py-3 px-6 rounded-2xl transition-colors"
+                    >
+                      다시 생성하기
+                    </button>
+                  </div>
+                )}
+              </div>
 
               {/* 액션 버튼들 */}
               <div className="space-y-4">
@@ -1455,109 +1544,6 @@ function Page() {
                     {button.text}
                   </button>
                 ))}
-                
-                {/* 배경 이미지 생성 섹션 */}
-                <div className="bg-white rounded-2xl p-6 space-y-6">
-                  <div className="text-center space-y-2">
-                    <h3 className="text-xl font-bold text-gray-800">이 분위기, 바로 설정해볼래요?</h3>
-                    <p className="text-gray-600">추구미에 딱맞는 배경 사진까지 뽑아왔어요</p>
-                  </div>
-
-                  {/* 로딩 상태 */}
-                  {isGeneratingBackgrounds && (
-                    <div className="text-center py-8">
-                      <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500 mb-4"></div>
-                      <p className="text-gray-600 mb-4">AI가 당신만의 배경을 만들고 있어요...</p>
-                    </div>
-                  )}
-
-                  {/* 생성된 배경 이미지들 */}
-                  {generatedBackgrounds && generatedBackgrounds.length > 0 && (
-                    <div className="space-y-6">
-                      <div className="grid grid-cols-2 gap-4">
-                        {generatedBackgrounds.map((bg, index) => (
-                          <div key={index} className="space-y-3">
-                            <div className="text-center">
-                              <span className="inline-block bg-gray-100 px-3 py-1 rounded-full text-sm font-medium text-gray-700">
-                                {bg.label}
-                              </span>
-                            </div>
-                            
-                            <div className="relative bg-gray-100 rounded-2xl overflow-hidden aspect-[3/4]">
-                              <img 
-                                src={bg.url} 
-                                alt={`${bg.label} 배경`}
-                                className="w-full h-full object-cover"
-                              />
-                              
-                              {/* 프로필 사진 오버레이 */}
-                              <div className="absolute inset-0 flex items-center justify-center">
-                                <div className="w-16 h-16 rounded-full overflow-hidden border-4 border-white shadow-lg">
-                                  {profileFile && (
-                                    <img 
-                                      src={URL.createObjectURL(profileFile)}
-                                      alt="프로필 미리보기"
-                                      className="w-full h-full object-cover"
-                                    />
-                                  )}
-                                </div>
-                              </div>
-                              
-                              {/* "나" 텍스트 */}
-                              <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2">
-                                <span className="bg-white px-3 py-1 rounded-full text-sm font-bold text-gray-800 shadow-md">
-                                  나
-                                </span>
-                              </div>
-                            </div>
-
-                            {/* 카톡에 반영하기 버튼 */}
-                            <button 
-                              onClick={() => {
-                                // 카카오톡 연동 기능 (향후 구현)
-                                alert('카카오톡 연동 기능은 곧 추가될 예정입니다!');
-                              }}
-                              className="w-full bg-black text-white font-medium py-3 px-4 rounded-2xl hover:bg-gray-800 transition-colors"
-                            >
-                              카톡에 반영하기
-                            </button>
-                          </div>
-                        ))}
-                      </div>
-
-                      {/* 배경 사진 저장하기 버튼 */}
-                      <button 
-                        onClick={() => {
-                          // 배경 이미지 저장 기능
-                          generatedBackgrounds.forEach((bg, index) => {
-                            const link = document.createElement('a');
-                            link.href = bg.url;
-                            link.download = `배경이미지_${bg.type}_${index + 1}.png`;
-                            document.body.appendChild(link);
-                            link.click();
-                            document.body.removeChild(link);
-                          });
-                        }}
-                        className="w-full bg-yellow-400 hover:bg-yellow-500 text-black font-bold py-4 px-6 rounded-2xl text-lg transition-colors"
-                      >
-                        배경 사진 저장하기
-                      </button>
-                    </div>
-                  )}
-
-                  {/* 재생성 버튼 (생성 완료 후 또는 실패 시) */}
-                  {!isGeneratingBackgrounds && (generatedBackgrounds === null || generatedBackgrounds?.length === 0) && (
-                    <div className="text-center py-4">
-                      <p className="text-gray-600 mb-4">배경 이미지 생성에 실패했습니다.</p>
-                      <button 
-                        onClick={() => generateBackgrounds(profileAnalysis, analysis?.one_liner)}
-                        className="bg-purple-500 hover:bg-purple-600 text-white font-medium py-3 px-6 rounded-2xl transition-colors"
-                      >
-                        다시 생성하기
-                      </button>
-                    </div>
-                  )}
-                </div>
                 
                 <button 
                   onClick={() => {
