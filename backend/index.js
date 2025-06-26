@@ -58,46 +58,85 @@ app.get('/', (req, res) => {
   res.send('Backend server is running!');
 });
 
-// Analyze aspiration image endpoint (OpenAI Vision)
-app.post('/analyze-aspiration', upload.single('image'), async (req, res) => {
+// Analyze aspiration images endpoint (OpenAI Vision) - supports 1-3 images
+app.post('/analyze-aspiration', upload.array('images', 3), async (req, res) => {
   try {
     console.log('🔍 Starting aspiration analysis...');
     console.log('OpenAI client initialized:', !!openai);
     console.log('OpenAI API key available:', !!openaiApiKey);
+    console.log('Number of images received:', req.files?.length || 0);
     
-    // Convert image buffer to base64
-    const base64Image = req.file.buffer.toString('base64');
-    const imageDataUrl = `data:${req.file.mimetype};base64,${base64Image}`;
-    console.log('Image converted to base64, size:', base64Image.length);
+    if (!req.files || req.files.length === 0) {
+      return res.status(400).json({ error: '이미지를 업로드해주세요.' });
+    }
 
-    console.log('📡 Calling OpenAI Vision API...');
+    if (req.files.length > 3) {
+      return res.status(400).json({ error: '최대 3장까지 업로드 가능합니다.' });
+    }
+
+    // Convert all images to base64
+    const imageContents = req.files.map(file => {
+      const base64Image = file.buffer.toString('base64');
+      const imageDataUrl = `data:${file.mimetype};base64,${base64Image}`;
+      console.log(`Image converted to base64, size: ${base64Image.length}`);
+      return { type: 'image_url', image_url: { url: imageDataUrl } };
+    });
+
+    // Prepare the content array with text prompt first, then images
+    const messageContent = [
+      { 
+        type: 'text', 
+        text: `당신은 사용자의 사진 1~3장을 분석하여, 해당 사용자의 현재 이미지 스타일과 성향을 바탕으로 "추구미 프로필"을 생성해주는 AI입니다.
+
+사용자는 별도의 텍스트를 입력하지 않고, 본인의 사진(프사 후보 또는 평소 좋아하는 이미지)을 1~3장 업로드합니다. 당신은 이 이미지들만을 바탕으로 다음과 같은 정보를 구성해야 합니다.
+
+요구 응답 형식 (JSON):
+
+{
+  "main_message": string,  // 추구미를 대표하는 한 줄 감성 요약 (예: "✨잔잔한 도시형 감성✨")
+  "one_liner": string,  // 사용자 스타일을 대표하는 유머러스한 한 줄 소개 (예: "감성 서초 하나로 사계절 우려먹는 남자")
+  "character_summary": [string],  // 해당 스타일을 표현하는 멘트 2~3개
+  "profile_traits": {
+    "대표표정": string,         // 이미지에서 추출된 인상/표정 특징
+    "대표의상": string,         // 의상 톤, 스타일 요약
+    "사진톤": string,           // 전체 이미지의 색감/무드
+    "찐친이 부르는 별명": string,  // 친구들이 붙일 법한 농담 섞인 별명
+    "스타일 요약": string       // 전반적 인상 요약 (예: "따뜻한데 거리감 있는 도회적 분위기")
+  },
+  "behavior_summary": [string],  // 해당 스타일을 가진 사람이 할 법한 일상 습관
+  "ai_comment": string,  // 스타일을 감성적으로 요약한 블로그형 멘트 (예: "도시 속 감성주의자, 따뜻한데 거리를 두는 그 느낌... 분위기... 있어...")
+  "recommended_action_buttons": [string]  // 프론트에서 사용할 버튼 텍스트 (예: ["결과 공유하기", "프사 추천받기", "이미지로 저장"])  
+}
+
+조건:
+- 반드시 JSON 형식으로만 응답할 것
+- 이미지 속 인물/배경/구도/색감/무드 등 모든 시각 요소를 종합 분석해 스타일을 추론
+- 문체는 캐주얼하며 사용자에게 공감과 재미를 줄 수 있어야 함
+- 한국어로 출력 (문법적으로 자연스럽고 부드럽게)
+- 예측에 자신 없는 경우에도 적절한 감성적 문구로 포장해줄 것
+
+입력으로는 이미지 1~3장이 제공됩니다. 각 이미지를 분석하여 공통된 인상과 스타일을 잡아내고 위 JSON 구조에 맞춰 응답해주세요.` 
+      },
+      ...imageContents
+    ];
+
+    console.log('📡 Calling OpenAI Vision API with', req.files.length, 'images...');
     // Call OpenAI Vision
     const completion = await openai.chat.completions.create({
       model: 'gpt-4o',
       messages: [
         {
           role: 'user',
-          content: [
-            { type: 'text', text: `이 이미지를 아래 JSON 포맷에 맞춰 추구미를 분석해줘. 반드시 JSON만 반환해줘.
-
-{
-  "keywords": [ "키워드1", "키워드2", ... ],
-  "style": "스타일 설명",
-  "impression": "인상 설명",
-  "keyFeatures": [ "핵심 포인트1", "핵심 포인트2", ... ]
-}
-` },
-            { type: 'image_url', image_url: { url: imageDataUrl } }
-          ]
+          content: messageContent
         }
       ],
-      max_tokens: 500,
+      max_tokens: 1000,
     });
 
     console.log('✅ OpenAI API call successful!');
     console.log('Response received, choices:', completion.choices.length);
 
-    // Parse the response (you may need to adjust this based on OpenAI's output)
+    // Parse the response
     const text = completion.choices[0].message.content;
     console.log('Raw OpenAI response:', text);
     
@@ -105,18 +144,53 @@ app.post('/analyze-aspiration', upload.single('image'), async (req, res) => {
     const jsonStart = text.indexOf('{');
     const jsonEnd = text.lastIndexOf('}');
     let analysis = {};
+    
     if (jsonStart !== -1 && jsonEnd !== -1) {
-      analysis = JSON.parse(text.substring(jsonStart, jsonEnd + 1));
-      console.log('✅ JSON parsed successfully');
+      try {
+        analysis = JSON.parse(text.substring(jsonStart, jsonEnd + 1));
+        console.log('✅ JSON parsed successfully');
+        
+        // Validate the required fields
+        if (!analysis.main_message || !analysis.profile_traits) {
+          throw new Error('Invalid JSON structure');
+        }
+      } catch (parseError) {
+        console.log('⚠️ JSON parsing failed, creating fallback response');
+        analysis = {
+          main_message: "✨독특한 개성이 담긴 감성✨",
+          one_liner: "나만의 스타일로 살아가는 사람",
+          character_summary: ["감성적이면서도 개성 있는", "자연스러운 매력을 가진"],
+          profile_traits: {
+            "대표표정": "자연스럽고 편안한 표정",
+            "대표의상": "개성 있는 스타일링",
+            "사진톤": "따뜻하고 감성적인 톤",
+            "찐친이 부르는 별명": "감성러",
+            "스타일 요약": "자연스러우면서도 개성 있는 매력"
+          },
+          behavior_summary: ["카페에서 창가 자리를 선호한다", "감성적인 음악을 즐겨 듣는다"],
+          ai_comment: "자연스러운 매력이 돋보이는 스타일... 편안하면서도 개성이 있어...",
+          recommended_action_buttons: ["결과 공유하기", "프사 추천받기", "이미지로 저장"],
+          raw: text
+        };
+      }
     } else {
+      console.log('⚠️ Could not find JSON in response, creating fallback');
       analysis = {
-        keywords: [],
-        style: '',
-        impression: '',
-        keyFeatures: [],
+        main_message: "✨독특한 개성이 담긴 감성✨",
+        one_liner: "나만의 스타일로 살아가는 사람",
+        character_summary: ["감성적이면서도 개성 있는", "자연스러운 매력을 가진"],
+        profile_traits: {
+          "대표표정": "자연스럽고 편안한 표정",
+          "대표의상": "개성 있는 스타일링",
+          "사진톤": "따뜻하고 감성적인 톤",
+          "찐친이 부르는 별명": "감성러",
+          "스타일 요약": "자연스러우면서도 개성 있는 매력"
+        },
+        behavior_summary: ["카페에서 창가 자리를 선호한다", "감성적인 음악을 즐겨 듣는다"],
+        ai_comment: "자연스러운 매력이 돋보이는 스타일... 편안하면서도 개성이 있어...",
+        recommended_action_buttons: ["결과 공유하기", "프사 추천받기", "이미지로 저장"],
         raw: text
       };
-      console.log('⚠️ Could not parse JSON, using raw response');
     }
 
     res.json(analysis);

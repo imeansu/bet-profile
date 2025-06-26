@@ -1,6 +1,7 @@
 'use client';
-import React, { useState, useEffect } from 'react';
-import { Upload, Camera, Star, Target, Palette, Users, Sparkles, ArrowRight, RotateCcw, ArrowLeft, User, Instagram } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Upload, Camera, Star, Target, Palette, Users, Sparkles, ArrowRight, RotateCcw, ArrowLeft, User, Instagram, Share, Download } from 'lucide-react';
+import html2canvas from 'html2canvas';
 
 function Page() {
   const [step, setStep] = useState(1);
@@ -16,7 +17,10 @@ function Page() {
   const [aspirationFiles, setAspirationFiles] = useState([]);
   const [profileFiles, setProfileFiles] = useState([]);
   const [currentMessage, setCurrentMessage] = useState('');
-  const [currentEmoji, setCurrentEmoji] = useState('🔍');
+  const [currentEmoji, setCurrentEmoji] = useState('');
+
+  // 결과 화면 캡쳐를 위한 ref
+  const resultRef = useRef(null);
 
   // 분석 중 메시지와 이모지 배열
   const analysisMessages = [
@@ -65,24 +69,33 @@ function Page() {
     };
   }, [isAnalyzing]);
 
-  const analyzeAspiration = async (file) => {
+  const analyzeAspiration = async () => {
     setIsAnalyzing(true);
     try {
       const formData = new FormData();
-      formData.append('image', file);
+      
+      // Add all aspiration files to FormData
+      aspirationFiles.forEach((file, index) => {
+        formData.append('images', file);
+      });
 
-      const response = await fetch('/analyze-aspiration', {
+      const response = await fetch('http://localhost:4000/analyze-aspiration', {
         method: 'POST',
         body: formData,
       });
 
-      if (!response.ok) throw new Error('분석 실패');
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || '분석 실패');
+      }
 
       const data = await response.json();
+      console.log('Analysis result:', data);
       setAnalysis(data);
       setStep(3);
     } catch (error) {
-      alert('AI 분석에 실패했습니다.');
+      console.error('Analysis error:', error);
+      alert(`AI 분석에 실패했습니다: ${error.message}`);
     } finally {
       setIsAnalyzing(false);
     }
@@ -179,6 +192,378 @@ function Page() {
     setCurrentEmoji('🔍');
   };
 
+  const handleShareResult = async () => {
+    let buttons = null;
+    let tempStylesheet = null;
+    try {
+      if (!resultRef.current) {
+        alert('캡쳐할 화면을 찾을 수 없습니다.');
+        return;
+      }
+
+      // 버튼들을 임시로 숨기기
+      buttons = resultRef.current.querySelectorAll('.action-buttons');
+      buttons.forEach(btn => btn.style.display = 'none');
+
+      // oklch 색상 문제 해결을 위한 임시 스타일시트 생성
+      tempStylesheet = document.createElement('style');
+      tempStylesheet.textContent = `
+        /* html2canvas용 포괄적 색상 오버라이드 */
+        * {
+          color: inherit !important;
+          background-color: inherit !important;
+          border-color: inherit !important;
+        }
+        
+        /* 배경 색상 */
+        .bg-gradient-to-r { background: linear-gradient(to right, #8b5cf6, #ec4899) !important; }
+        .bg-gradient-to-br { background: linear-gradient(to bottom right, #faf5ff, #fdf2f8, #eff6ff) !important; }
+        .from-purple-50 { background: #faf5ff !important; }
+        .via-pink-50 { background: #fdf2f8 !important; }
+        .to-blue-50 { background: #eff6ff !important; }
+        .from-purple-500 { background: #8b5cf6 !important; }
+        .to-pink-500 { background: #ec4899 !important; }
+        .from-purple-600 { background: #7c3aed !important; }
+        .to-pink-600 { background: #db2777 !important; }
+        .from-blue-500 { background: #3b82f6 !important; }
+        .to-cyan-500 { background: #06b6d4 !important; }
+        .from-blue-600 { background: #2563eb !important; }
+        .to-cyan-600 { background: #0891b2 !important; }
+        .from-green-500 { background: #10b981 !important; }
+        .to-emerald-500 { background: #059669 !important; }
+        .from-green-600 { background: #059669 !important; }
+        .to-emerald-600 { background: #047857 !important; }
+        .bg-purple-50 { background: #faf5ff !important; }
+        .bg-pink-50 { background: #fdf2f8 !important; }
+        .bg-blue-50 { background: #eff6ff !important; }
+        .bg-gray-50 { background: #f9fafb !important; }
+        .bg-gray-100 { background: #f3f4f6 !important; }
+        .bg-gray-200 { background: #e5e7eb !important; }
+        .bg-white { background: #ffffff !important; }
+        .bg-green-100 { background: #dcfce7 !important; }
+        .bg-orange-100 { background: #fed7aa !important; }
+        .bg-red-100 { background: #fee2e2 !important; }
+        .bg-blue-100 { background: #dbeafe !important; }
+        
+        /* 텍스트 색상 */
+        .text-gray-800 { color: #1f2937 !important; }
+        .text-gray-700 { color: #374151 !important; }
+        .text-gray-600 { color: #4b5563 !important; }
+        .text-gray-500 { color: #6b7280 !important; }
+        .text-purple-600 { color: #9333ea !important; }
+        .text-pink-600 { color: #db2777 !important; }
+        .text-blue-600 { color: #2563eb !important; }
+        .text-white { color: #ffffff !important; }
+        .text-green-800 { color: #166534 !important; }
+        .text-green-700 { color: #15803d !important; }
+        .text-orange-800 { color: #9a3412 !important; }
+        .text-orange-700 { color: #c2410c !important; }
+        .text-red-800 { color: #991b1b !important; }
+        .text-red-700 { color: #b91c1c !important; }
+        .text-blue-800 { color: #1e40af !important; }
+        .text-blue-700 { color: #1d4ed8 !important; }
+        
+        /* 테두리 색상 */
+        .border-gray-200 { border-color: #e5e7eb !important; }
+        .border-gray-300 { border-color: #d1d5db !important; }
+        .border { border-width: 1px !important; border-style: solid !important; }
+        
+        /* hover 효과 제거 (캡쳐 시에는 불필요) */
+        .hover\\:bg-gray-100:hover { background: #f3f4f6 !important; }
+        .hover\\:from-purple-600:hover { background: #7c3aed !important; }
+        .hover\\:to-pink-600:hover { background: #db2777 !important; }
+        .hover\\:from-blue-600:hover { background: #2563eb !important; }
+        .hover\\:to-cyan-600:hover { background: #0891b2 !important; }
+        .hover\\:from-green-600:hover { background: #059669 !important; }
+        .hover\\:to-emerald-600:hover { background: #047857 !important; }
+      `;
+      document.head.appendChild(tempStylesheet);
+
+      // 잠시 기다린 후 캡쳐 (DOM 업데이트 대기)
+      await new Promise(resolve => setTimeout(resolve, 200));
+
+      // html2canvas로 화면 캡쳐
+      const canvas = await html2canvas(resultRef.current, {
+        backgroundColor: '#f9fafb', // oklch 대신 일반 색상 사용
+        scale: 2, // 고화질
+        useCORS: true,
+        allowTaint: true,
+        logging: false, // 로깅 비활성화
+        width: resultRef.current.scrollWidth,
+        height: resultRef.current.scrollHeight,
+        removeContainer: true, // 임시 컨테이너 제거
+        foreignObjectRendering: false, // SVG 렌더링 비활성화
+        ignoreElements: (element) => {
+          // 문제가 될 수 있는 요소들 무시
+          return element.classList && element.classList.contains('action-buttons');
+        },
+        onclone: (clonedDoc) => {
+          // 클론된 문서에서 추가 스타일 정리
+          const clonedButtons = clonedDoc.querySelectorAll('.action-buttons');
+          clonedButtons.forEach(btn => btn.style.display = 'none');
+          
+          // 클론된 문서에도 안전한 색상 스타일 적용
+          const clonedStyle = clonedDoc.createElement('style');
+          clonedStyle.textContent = tempStylesheet.textContent;
+          clonedDoc.head.appendChild(clonedStyle);
+          
+          // 모든 oklch 색상을 강제로 제거
+          const allElements = clonedDoc.querySelectorAll('*');
+          allElements.forEach(el => {
+            const computedStyle = window.getComputedStyle(el);
+            if (computedStyle.backgroundColor && computedStyle.backgroundColor.includes('oklch')) {
+              el.style.backgroundColor = '#ffffff';
+            }
+            if (computedStyle.color && computedStyle.color.includes('oklch')) {
+              el.style.color = '#000000';
+            }
+            if (computedStyle.borderColor && computedStyle.borderColor.includes('oklch')) {
+              el.style.borderColor = '#e5e7eb';
+            }
+          });
+        }
+      });
+
+      if (!canvas) {
+        throw new Error('캔버스 생성에 실패했습니다.');
+      }
+
+      // Canvas를 Blob으로 변환
+      canvas.toBlob(async (blob) => {
+        if (navigator.share && navigator.canShare) {
+          // Web Share API 사용 (모바일/최신 브라우저)
+          try {
+            const file = new File([blob], 'my-chuguemi-result.png', { type: 'image/png' });
+            await navigator.share({
+              title: '내 추구미 분석 결과',
+              text: 'AI가 분석한 내 추구미 결과를 확인해보세요!',
+              files: [file]
+            });
+          } catch (shareError) {
+            console.log('Web Share API 실패, 클립보드로 복사 시도');
+            await copyImageToClipboard(blob);
+          }
+        } else {
+          // Web Share API 미지원시 클립보드 복사
+          await copyImageToClipboard(blob);
+        }
+      }, 'image/png');
+
+    } catch (error) {
+      console.error('공유 중 오류:', error);
+      alert('결과 공유 중 오류가 발생했습니다.');
+    } finally {
+      // 오류 발생 여부와 상관없이 정리
+      if (buttons) {
+        buttons.forEach(btn => btn.style.display = '');
+      }
+      if (tempStylesheet) {
+        document.head.removeChild(tempStylesheet);
+      }
+    }
+  };
+
+  const copyImageToClipboard = async (blob) => {
+    try {
+      if (navigator.clipboard && window.ClipboardItem) {
+        await navigator.clipboard.write([
+          new ClipboardItem({ 'image/png': blob })
+        ]);
+        alert('이미지가 클립보드에 복사되었습니다! 원하는 곳에 붙여넣기 하세요.');
+      } else {
+        // 클립보드 API 미지원시 다운로드로 대체
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'my-chuguemi-result.png';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        alert('이미지가 다운로드되었습니다!');
+      }
+    } catch (error) {
+      console.error('클립보드 복사 실패:', error);
+      // 최후 수단으로 다운로드
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'my-chuguemi-result.png';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      alert('이미지가 다운로드되었습니다!');
+    }
+  };
+
+  const handleSaveAsImage = async () => {
+    let buttons = null;
+    let tempStylesheet = null;
+    try {
+      if (!resultRef.current) {
+        alert('캡쳐할 화면을 찾을 수 없습니다.');
+        return;
+      }
+
+      // 버튼들을 임시로 숨기기
+      buttons = resultRef.current.querySelectorAll('.action-buttons');
+      buttons.forEach(btn => btn.style.display = 'none');
+
+      // oklch 색상 문제 해결을 위한 임시 스타일시트 생성
+      tempStylesheet = document.createElement('style');
+      tempStylesheet.textContent = `
+        /* html2canvas용 포괄적 색상 오버라이드 */
+        * {
+          color: inherit !important;
+          background-color: inherit !important;
+          border-color: inherit !important;
+        }
+        
+        /* 배경 색상 */
+        .bg-gradient-to-r { background: linear-gradient(to right, #8b5cf6, #ec4899) !important; }
+        .bg-gradient-to-br { background: linear-gradient(to bottom right, #faf5ff, #fdf2f8, #eff6ff) !important; }
+        .from-purple-50 { background: #faf5ff !important; }
+        .via-pink-50 { background: #fdf2f8 !important; }
+        .to-blue-50 { background: #eff6ff !important; }
+        .from-purple-500 { background: #8b5cf6 !important; }
+        .to-pink-500 { background: #ec4899 !important; }
+        .from-purple-600 { background: #7c3aed !important; }
+        .to-pink-600 { background: #db2777 !important; }
+        .from-blue-500 { background: #3b82f6 !important; }
+        .to-cyan-500 { background: #06b6d4 !important; }
+        .from-blue-600 { background: #2563eb !important; }
+        .to-cyan-600 { background: #0891b2 !important; }
+        .from-green-500 { background: #10b981 !important; }
+        .to-emerald-500 { background: #059669 !important; }
+        .from-green-600 { background: #059669 !important; }
+        .to-emerald-600 { background: #047857 !important; }
+        .bg-purple-50 { background: #faf5ff !important; }
+        .bg-pink-50 { background: #fdf2f8 !important; }
+        .bg-blue-50 { background: #eff6ff !important; }
+        .bg-gray-50 { background: #f9fafb !important; }
+        .bg-gray-100 { background: #f3f4f6 !important; }
+        .bg-gray-200 { background: #e5e7eb !important; }
+        .bg-white { background: #ffffff !important; }
+        .bg-green-100 { background: #dcfce7 !important; }
+        .bg-orange-100 { background: #fed7aa !important; }
+        .bg-red-100 { background: #fee2e2 !important; }
+        .bg-blue-100 { background: #dbeafe !important; }
+        
+        /* 텍스트 색상 */
+        .text-gray-800 { color: #1f2937 !important; }
+        .text-gray-700 { color: #374151 !important; }
+        .text-gray-600 { color: #4b5563 !important; }
+        .text-gray-500 { color: #6b7280 !important; }
+        .text-purple-600 { color: #9333ea !important; }
+        .text-pink-600 { color: #db2777 !important; }
+        .text-blue-600 { color: #2563eb !important; }
+        .text-white { color: #ffffff !important; }
+        .text-green-800 { color: #166534 !important; }
+        .text-green-700 { color: #15803d !important; }
+        .text-orange-800 { color: #9a3412 !important; }
+        .text-orange-700 { color: #c2410c !important; }
+        .text-red-800 { color: #991b1b !important; }
+        .text-red-700 { color: #b91c1c !important; }
+        .text-blue-800 { color: #1e40af !important; }
+        .text-blue-700 { color: #1d4ed8 !important; }
+        
+        /* 테두리 색상 */
+        .border-gray-200 { border-color: #e5e7eb !important; }
+        .border-gray-300 { border-color: #d1d5db !important; }
+        .border { border-width: 1px !important; border-style: solid !important; }
+        
+        /* hover 효과 제거 (캡쳐 시에는 불필요) */
+        .hover\\:bg-gray-100:hover { background: #f3f4f6 !important; }
+        .hover\\:from-purple-600:hover { background: #7c3aed !important; }
+        .hover\\:to-pink-600:hover { background: #db2777 !important; }
+        .hover\\:from-blue-600:hover { background: #2563eb !important; }
+        .hover\\:to-cyan-600:hover { background: #0891b2 !important; }
+        .hover\\:from-green-600:hover { background: #059669 !important; }
+        .hover\\:to-emerald-600:hover { background: #047857 !important; }
+      `;
+      document.head.appendChild(tempStylesheet);
+
+      // 잠시 기다린 후 캡쳐 (DOM 업데이트 대기)
+      await new Promise(resolve => setTimeout(resolve, 200));
+
+      // html2canvas로 화면 캡쳐
+      const canvas = await html2canvas(resultRef.current, {
+        backgroundColor: '#f9fafb', // oklch 대신 일반 색상 사용
+        scale: 2, // 고화질
+        useCORS: true,
+        allowTaint: true,
+        logging: false, // 로깅 비활성화
+        width: resultRef.current.scrollWidth,
+        height: resultRef.current.scrollHeight,
+        removeContainer: true, // 임시 컨테이너 제거
+        foreignObjectRendering: false, // SVG 렌더링 비활성화
+        ignoreElements: (element) => {
+          // 문제가 될 수 있는 요소들 무시
+          return element.classList && element.classList.contains('action-buttons');
+        },
+        onclone: (clonedDoc) => {
+          // 클론된 문서에서 추가 스타일 정리
+          const clonedButtons = clonedDoc.querySelectorAll('.action-buttons');
+          clonedButtons.forEach(btn => btn.style.display = 'none');
+          
+          // 클론된 문서에도 안전한 색상 스타일 적용
+          const clonedStyle = clonedDoc.createElement('style');
+          clonedStyle.textContent = tempStylesheet.textContent;
+          clonedDoc.head.appendChild(clonedStyle);
+          
+          // 모든 oklch 색상을 강제로 제거
+          const allElements = clonedDoc.querySelectorAll('*');
+          allElements.forEach(el => {
+            const computedStyle = window.getComputedStyle(el);
+            if (computedStyle.backgroundColor && computedStyle.backgroundColor.includes('oklch')) {
+              el.style.backgroundColor = '#ffffff';
+            }
+            if (computedStyle.color && computedStyle.color.includes('oklch')) {
+              el.style.color = '#000000';
+            }
+            if (computedStyle.borderColor && computedStyle.borderColor.includes('oklch')) {
+              el.style.borderColor = '#e5e7eb';
+            }
+          });
+        }
+      });
+
+      if (!canvas) {
+        throw new Error('캔버스 생성에 실패했습니다.');
+      }
+
+      // Canvas를 이미지로 다운로드
+      canvas.toBlob((blob) => {
+        if (blob) {
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `my-chuguemi-result-${new Date().getTime()}.png`;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+          alert('이미지가 저장되었습니다!');
+        } else {
+          throw new Error('이미지 생성에 실패했습니다.');
+        }
+      }, 'image/png');
+
+    } catch (error) {
+      console.error('이미지 저장 중 오류:', error);
+      alert(`이미지 저장 중 오류가 발생했습니다: ${error.message}`);
+    } finally {
+      // 오류 발생 여부와 상관없이 정리
+      if (buttons) {
+        buttons.forEach(btn => btn.style.display = '');
+      }
+      if (tempStylesheet) {
+        document.head.removeChild(tempStylesheet);
+      }
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50">
       {/* Header */}
@@ -214,7 +599,7 @@ function Page() {
           <div className="max-w-md mx-auto px-4 py-8 space-y-8">
             {/* 메인 타이틀 */}
             <div className="text-center space-y-4">
-              <h2 className="text-2xl font-bold text-gray-800 leading-tight">
+              <h2 className="text-2xl font-bold text-gray-800">
                 내가 추구하는 스타일을<br />
                 사진으로 알려주세요
               </h2>
@@ -318,7 +703,7 @@ function Page() {
                 <button 
                   onClick={() => {
                     setStep(2);
-                    analyzeAspiration(aspirationFiles[0]);
+                    analyzeAspiration();
                   }}
                   className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-bold py-4 px-6 rounded-2xl text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 flex items-center justify-center"
                 >
@@ -399,7 +784,8 @@ function Page() {
               <div className="w-10"></div>
             </div>
 
-            <div className="px-4 py-6 space-y-6">
+            {/* 캡쳐할 결과 영역 */}
+            <div ref={resultRef} className="px-4 py-6 space-y-6">
               {/* 업로드된 이미지들 */}
               <div className="grid grid-cols-3 gap-3">
                 {aspirationImages.slice(0, 3).map((img, index) => (
@@ -416,7 +802,7 @@ function Page() {
               {/* 메인 문구 */}
               <div className="bg-gradient-to-r from-purple-400 to-purple-500 rounded-2xl p-6 text-center">
                 <h2 className="text-2xl font-bold text-white">
-                  잔잔한 도시형 감성 ✨
+                  {analysis.main_message || "✨독특한 개성이 담긴 감성✨"}
                 </h2>
               </div>
 
@@ -428,38 +814,40 @@ function Page() {
                   </div>
                   <div className="flex-1">
                     <h3 className="text-lg font-semibold text-gray-800 mb-2">
-                      당신은 차분한 취향을 가진 사람이군요 😊
+                      {analysis.one_liner || "나만의 스타일로 살아가는 사람"}
                     </h3>
-                    <p className="text-gray-600 leading-relaxed">
-                      도시적이면서도 편안한 분위기를 추구하는 당신은 자연스러운 색감과 
-                      심플한 디자인을 선호합니다. 과하지 않으면서도 세련된 감각이 돋보이는 
-                      스타일이 특징입니다.
-                    </p>
+                    <div className="space-y-2">
+                      {analysis.character_summary?.map((summary, index) => (
+                        <p key={index} className="text-gray-600 leading-relaxed">
+                          {summary}
+                        </p>
+                      )) || (
+                        <p className="text-gray-600 leading-relaxed">
+                          자연스러운 매력이 돋보이는 스타일
+                        </p>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
 
-              {/* 한 마디로 말하면 */}
-              <div className="bg-white rounded-2xl p-6 space-y-4">
-                <h3 className="text-lg font-semibold text-gray-800 flex items-center">
-                  <span className="mr-2">💭</span>
-                  한 마디로 말하면...
-                </h3>
-                <div className="space-y-3">
-                  <div className="flex items-start space-x-3">
-                    <span className="text-purple-500 font-bold">•</span>
-                    <p className="text-gray-700">"감성 셔츠 하나로 사계절 우려먹는 남자"</p>
-                  </div>
-                  <div className="flex items-start space-x-3">
-                    <span className="text-purple-500 font-bold">•</span>
-                    <p className="text-gray-700">"말수는 없는데 눈빛으로 소통하는 타입"</p>
-                  </div>
-                  <div className="flex items-start space-x-3">
-                    <span className="text-purple-500 font-bold">•</span>
-                    <p className="text-gray-700">"말은 없어도 눈빛은 많은 사람"</p>
+              {/* 프로필 특성 */}
+              {analysis.profile_traits && (
+                <div className="bg-white rounded-2xl p-6 space-y-4">
+                  <h3 className="text-lg font-semibold text-gray-800 flex items-center">
+                    <span className="mr-2">👤</span>
+                    프로필 특성
+                  </h3>
+                  <div className="grid grid-cols-1 gap-3">
+                    {Object.entries(analysis.profile_traits).map(([key, value]) => (
+                      <div key={key} className="flex justify-between items-center py-2 border-b border-gray-100 last:border-b-0">
+                        <span className="text-gray-600 font-medium">{key}</span>
+                        <span className="text-gray-800">{value}</span>
+                      </div>
+                    ))}
                   </div>
                 </div>
-              </div>
+              )}
 
               {/* 행동으로 말하면 */}
               <div className="bg-white rounded-2xl p-6 space-y-4">
@@ -468,18 +856,17 @@ function Page() {
                   행동으로 말하면...
                 </h3>
                 <div className="space-y-3">
-                  <div className="flex items-start space-x-3">
-                    <span className="text-purple-500 font-bold">•</span>
-                    <p className="text-gray-700">"책 읽다 말고 창밖 보기"</p>
-                  </div>
-                  <div className="flex items-start space-x-3">
-                    <span className="text-purple-500 font-bold">•</span>
-                    <p className="text-gray-700">"괜히 블루투스 이어폰 하나만 끼고 걷기"</p>
-                  </div>
-                  <div className="flex items-start space-x-3">
-                    <span className="text-purple-500 font-bold">•</span>
-                    <p className="text-gray-700">"블로그에 영화 감상 한 줄 쓰기"</p>
-                  </div>
+                  {analysis.behavior_summary?.map((behavior, index) => (
+                    <div key={index} className="flex items-start space-x-3">
+                      <span className="text-purple-500 font-bold">•</span>
+                      <p className="text-gray-700">{behavior}</p>
+                    </div>
+                  )) || (
+                    <div className="flex items-start space-x-3">
+                      <span className="text-purple-500 font-bold">•</span>
+                      <p className="text-gray-700">개성 있는 라이프스타일을 추구한다</p>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -487,32 +874,76 @@ function Page() {
               <div className="bg-gradient-to-r from-gray-100 to-gray-50 rounded-2xl p-6 border-l-4 border-purple-400">
                 <div className="text-center">
                   <p className="text-lg font-medium text-gray-800 italic leading-relaxed">
-                    "모던하면서도 따뜻한 감성이 돋보이는 당신,<br />
-                    특별하지 않아도 늘 기억에 남는 사람이겠어요."
+                    "{analysis.ai_comment || "자연스러운 매력이 돋보이는 스타일... 편안하면서도 개성이 있어..."}"
                   </p>
-                  <div className="mt-4 text-sm text-gray-500">
-                    - AI의 한마디 -
-                  </div>
                 </div>
               </div>
 
-              {/* 버튼들 */}
-              <div className="space-y-3 pt-4">
-                <button className="w-full bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-500 hover:to-yellow-600 text-white font-bold py-4 px-6 rounded-2xl text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300">
-                  결과 공유하기
-                </button>
-                
-                <div className="grid grid-cols-2 gap-3">
-                  <button 
-                    onClick={() => setStep(4)}
-                    className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-semibold py-3 px-4 rounded-xl shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-300"
-                  >
-                    프사 추천받기
-                  </button>
-                  <button className="bg-gradient-to-r from-gray-400 to-gray-500 hover:from-gray-500 hover:to-gray-600 text-white font-semibold py-3 px-4 rounded-xl shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-300">
-                    이미지로 저장
-                  </button>
-                </div>
+              {/* 액션 버튼들 */}
+              <div className="grid grid-cols-1 gap-4 action-buttons">
+                {analysis.recommended_action_buttons?.map((buttonText, index) => {
+                  if (buttonText.includes('프사 추천받기') || buttonText.includes('프사')) {
+                    return (
+                      <button
+                        key={index}
+                        onClick={() => setStep(4)}
+                        className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-bold py-4 px-6 rounded-2xl text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
+                      >
+                        {buttonText}
+                      </button>
+                    );
+                  } else if (buttonText.includes('결과 공유') || buttonText.includes('공유')) {
+                    return (
+                      <button
+                        key={index}
+                        onClick={handleShareResult}
+                        className="w-full bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white font-bold py-4 px-6 rounded-2xl text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
+                      >
+                        {buttonText}
+                      </button>
+                    );
+                  } else if (buttonText.includes('이미지로 저장') || buttonText.includes('저장')) {
+                    return (
+                      <button
+                        key={index}
+                        onClick={handleSaveAsImage}
+                        className="w-full bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white font-bold py-4 px-6 rounded-2xl text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
+                      >
+                        {buttonText}
+                      </button>
+                    );
+                  } else {
+                    return (
+                      <button
+                        key={index}
+                        className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-bold py-4 px-6 rounded-2xl text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
+                      >
+                        {buttonText}
+                      </button>
+                    );
+                  }
+                }) || (
+                  <>
+                    <button 
+                      onClick={handleShareResult}
+                      className="w-full bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white font-bold py-4 px-6 rounded-2xl text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
+                    >
+                      결과 공유하기
+                    </button>
+                    <button 
+                      onClick={() => setStep(4)}
+                      className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-bold py-4 px-6 rounded-2xl text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
+                    >
+                      프사 추천받기
+                    </button>
+                    <button 
+                      onClick={handleSaveAsImage}
+                      className="w-full bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white font-bold py-4 px-6 rounded-2xl text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
+                    >
+                      이미지로 저장
+                    </button>
+                  </>
+                )}
               </div>
             </div>
           </div>
@@ -651,7 +1082,7 @@ function Page() {
                           setStep(5);
                         }, 3000);
                       }}
-                      className="w-full bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white font-bold py-4 px-6 rounded-2xl text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 flex items-center justify-center"
+                      className="w-full bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white font-bold py-4 px-6 rounded-2xl text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
                     >
                       <Sparkles className="w-5 h-5 mr-2" />
                       AI 분석 시작하기
@@ -803,7 +1234,7 @@ function Page() {
               {/* 최종 진단 */}
               <div className="bg-green-50 rounded-2xl p-5">
                 <h3 className="text-lg font-bold text-green-800 mb-3">✅ 최종 진단</h3>
-                <div className="space-y-2 text-sm">
+                <div className="space-y-2">
                   <div className="flex justify-between">
                     <span className="text-green-700 font-medium">추구미 도달도</span>
                     <span className="text-green-600 font-bold">근접</span>
@@ -814,7 +1245,7 @@ function Page() {
                   </div>
                   <div className="mt-3 p-3 bg-green-100 rounded-xl">
                     <p className="text-green-800 font-medium text-xs">💡 조정 팁</p>
-                    <p className="text-green-700 text-xs mt-1">배경을 자연광 중심 or 식물/베이지 톤으로 바꾸면 더 딱 맞을 수 있음</p>
+                    <p className="text-green-700 text-xs mt-1">배경을 자연광 중심 or 식물/베이지 톤으로 바꾸면 더 좋을 수 있음</p>
                   </div>
                 </div>
               </div>

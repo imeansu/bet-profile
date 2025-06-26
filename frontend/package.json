@@ -10,6 +10,7 @@
     "export": "next export"
   },
   "dependencies": {
+    "html2canvas": "^1.4.1",
     "lucide-react": "^0.518.0",
     "next": "15.3.4",
     "react": "^19.0.0",
