@@ -840,12 +840,12 @@ function Page() {
         <div className="mb-8">
           <div className="flex items-center justify-between mb-2">
             <span className="text-sm font-medium text-gray-600">진행 상황</span>
-            <span className="text-sm text-gray-500">{step}/7 단계</span>
+            <span className="text-sm text-gray-500">{step}/6 단계</span>
           </div>
           <div className="w-full bg-gray-200 rounded-full h-2">
             <div 
               className="bg-gradient-to-r from-purple-500 to-pink-500 h-2 rounded-full transition-all duration-500"
-              style={{ width: `${(step / 7) * 100}%` }}
+              style={{ width: `${(step / 6) * 100}%` }}
             ></div>
           </div>
         </div>
@@ -1315,7 +1315,7 @@ function Page() {
               <div className="bg-white rounded-2xl p-6 text-center space-y-4">
                 {/* 프로필 이미지 */}
                 <div className="flex justify-center">
-                  <div className="w-20 h-20 rounded-2xl overflow-hidden border-4 border-gray-200">
+                  <div className="w-20 h-20 rounded-2xl overflow-hidden border-4 border-white shadow-lg">
                     {profileFile && (
                       <img 
                         src={URL.createObjectURL(profileFile)}
@@ -1701,88 +1701,6 @@ function Page() {
                 </button>
               </div>
             </div>
-          </div>
-        )}
-
-        {/* Step 7: AI 편집된 이미지 제안 */}
-        {step === 7 && (
-          <div className="space-y-8">
-            {isAnalyzing ? (
-              <div className="text-center space-y-8">
-                <div className="space-y-4">
-                  <div className="animate-spin w-8 h-8 border-4 border-green-500 border-t-transparent rounded-full mx-auto"></div>
-                  <h2 className="text-2xl font-bold text-gray-800">{currentMessage}</h2>
-                  <p className="text-gray-600">{currentEmoji}</p>
-                </div>
-              </div>
-            ) : (
-              <div className="space-y-8">
-                <div className="text-center space-y-4">
-                  <h2 className="text-2xl font-bold text-gray-800">✨ AI 편집 결과</h2>
-                  <p className="text-gray-600">피드백을 반영하여 개선된 프로필 이미지를 제안드려요</p>
-                </div>
-
-                <div className="grid md:grid-cols-2 gap-8">
-                  <div className="space-y-4">
-                    <h3 className="text-lg font-semibold text-center">원본 이미지</h3>
-                    <div className="bg-white p-4 rounded-2xl shadow-lg">
-                      <img 
-                        src={profileImages[0]} 
-                        alt="원본" 
-                        className="w-full h-64 object-cover rounded-xl" 
-                      />
-                      <div className="mt-3 text-center">
-                        <span className="text-2xl font-bold text-gray-600">{analysis.totalScore}/50</span>
-                        <p className="text-sm text-gray-500">기존 점수</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="space-y-4">
-                    <h3 className="text-lg font-semibold text-center">AI 편집 이미지</h3>
-                    <div className="bg-white p-4 rounded-2xl shadow-lg border-2 border-green-200">
-                      <div className="w-full h-64 bg-gradient-to-br from-green-100 to-blue-100 rounded-xl flex items-center justify-center relative overflow-hidden">
-                        {editedImageUrl ? (
-                          <img src={editedImageUrl} alt="AI 편집" className="w-full h-full object-cover rounded-xl" />
-                        ) : (
-                          <div className="text-center space-y-2">
-                            <Sparkles className="w-12 h-12 text-green-500 mx-auto animate-pulse" />
-                            <p className="text-green-700 font-medium">편집된 이미지</p>
-                            <p className="text-sm text-green-600">더 밝은 표정 + 자연광 효과</p>
-                          </div>
-                        )}
-                      </div>
-                      <div className="mt-3 text-center">
-                        <span className="text-2xl font-bold text-green-600">{improvedScore ? `${improvedScore}/50` : '45/50'}</span>
-                        <p className="text-sm text-green-500">개선된 점수</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="text-center space-y-4">
-                  <div className="bg-green-50 border border-green-200 rounded-xl p-4">
-                    <h3 className="text-lg font-semibold text-green-800 mb-2">🎉 개선 완료!</h3>
-                    <p className="text-green-700">AI 편집으로 더 매력적인 프로필 이미지가 완성되었어요.</p>
-                  </div>
-                  
-                  <div className="flex gap-4 justify-center">
-                    <button
-                      onClick={resetFlow}
-                      className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-6 py-3 rounded-xl font-medium transition-colors"
-                    >
-                      다시 시작하기
-                    </button>
-                    <button
-                      onClick={() => window.location.href = '/'}
-                      className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-xl font-medium hover:shadow-lg transition-all"
-                    >
-                      처음으로 돌아가기
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )}
           </div>
         )}
       </div>
