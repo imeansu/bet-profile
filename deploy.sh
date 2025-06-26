@@ -14,8 +14,13 @@ cd ..
 
 cp /home/ec2-user/.env /home/ec2-user/bet-profile/backend/.env
 
-echo "prune ..."
-docker system prune -a --volumes -f
+# Only prune if --prune argument is given
+if [[ "$1" == "--prune" ]]; then
+  echo "prune ..."
+  docker system prune -a --volumes -f
+else
+  echo "Skipping docker system prune (use --prune to enable)"
+fi
 
 
 echo "Building Docker image..."

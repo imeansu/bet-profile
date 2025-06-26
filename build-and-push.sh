@@ -27,6 +27,8 @@ fi
 echo "Building Next.js application..."
 npm run build
 
+cd ..
+
 # Step 2: Build Docker Image
 echo "🐳 Building Docker image..."
 docker build --platform linux/amd64 -t ${IMAGE_NAME}:${TAG} .
