@@ -119,6 +119,202 @@ app.post('/analyze-aspiration', upload.array('images', 3), async (req, res) => {
   ]
 }
 
+---
+<참고 예시 #1>
+main_message: 감성 셔츠 하나로 사계절 우려먹는 남자 👔  
+profile_traits:
+  - 이름: 감정 없는 척하는 감성 장인 🧊✨
+  - 얼굴: 😐 입꼬리만 0.2mm 올라간 무표정
+  - 의상: 남색 셔츠 / 어깨 각 살아있는 느낌
+  - 별명: “조용한 줄 알았는데 은근 웃긴 놈”
+  - 스타일: 무채색 옷, 무표정, 카메라는 안 쳐다봄  
+character_summary:
+- 감성 셔츠 하나로 사계절 우려먹는 남자  
+- 말수는 없는데 눈빛으로 소통하는 타입  
+- 말은 없어도 눈빛은 많은 사람  
+behavior_summary:
+"책 읽다 말고 창밖 봄", "괜히 블루투스 이어폰 하나만 끼고 걷기", "블로그에 영화 감상 한 줄 쓰기"  
+ai_comment:
+"도시 속 감성주의자, 따뜻한데 거리를 두는 그 느낌... 분위기... 있어..."
+
+<참고 예시 #2>
+main_message: 조용히 웃기고 싶은 사람 😂  
+profile_traits:
+  - 이름: 무표정 개그 고수  
+  - 얼굴: 입꼬리 안 올라감, 눈썹 살짝 찡그림 🤨  
+  - 의상: 스트라이프 셔츠 or 맨투맨  
+  - 별명: “웃기려고 한 거 아님”  
+  - 스타일: 정제된 듯, 허당 끼 있음  
+character_summary:
+- 분위기는 진지한데 말은 웃김  
+- 일부러 안 웃긴 게 포인트  
+behavior_summary:
+“아 그건 좀…” 한마디에 폭소 유발, 무표정으로 밈 드립 침  
+ai_comment:
+무표정에 개그 코드 숨어있음. 웃기면 진심 인정받음.
+
+<참고 예시 #3>
+main_message: 해 뜨면 기분 좋아지는 식물형 인간 🌱  
+profile_traits:
+  - 이름: 빛 받으면 광합성 함  
+  - 얼굴: 눈웃음 + 볼살 가득 😄  
+  - 의상: 라이트톤 셔츠 + 청바지  
+  - 별명: “햇살 사람 버전”  
+  - 스타일: 밝고 단정한, 미니멀 감성  
+character_summary:
+- 날씨 좋으면 텐션도 높아짐  
+- 행복해 보이는 게 직업임  
+behavior_summary:
+햇살 맞으며 콧노래 흥얼, 카페에서 창가 자리 선호  
+ai_comment:
+진짜 식물 아니냐는 말 들어봄. 빛 받으면 광이 남.
+
+<참고 예시 #4>
+main_message: 사람 많은 곳에서 조용히 반짝이는 사람 ✨  
+profile_traits:
+  - 이름: 내향적 셀럽감  
+  - 얼굴: 눈동자에 은은한 광채 ✨  
+  - 의상: 심플한 톤 + 고급소재 느낌  
+  - 별명: “조용한 아우라 깡패”  
+  - 스타일: 무채색 미니멀리스트  
+character_summary:
+- 말수 적지만 존재감 뚜렷  
+- 자리에 가만히 있어도 주목받음  
+behavior_summary:
+그림자처럼 움직이다 존재감 팍, 입장할 땐 조용, 시선은 강렬  
+ai_comment:
+아무 말 안 했는데 분위기 다 삼킴. 묘한 고급진 느낌.
+
+<참고 예시 #5>
+main_message: 온도차 심한 반전 매력러 ❄️🔥  
+profile_traits:
+  - 이름: 외유내강 감성투사  
+  - 얼굴: 잔잔한 인상인데 눈빛 강함 👀  
+  - 의상: 니트 + 롱스커트 or 스웻팬츠  
+  - 별명: “생각보다 강한 사람”  
+  - 스타일: 따뜻함 속 카리스마 있음  
+character_summary:
+- 겉은 말랑한데 내면 단단  
+- 의외의 추진력과 리더십  
+behavior_summary:
+늘 배려하는데 정작 중심 잡음, “할게요” 한마디면 다 믿음  
+ai_comment:
+처음엔 몰랐는데 은근히 다 휘어잡음. 고요한 폭풍.
+
+
+<참고 예시 #6>
+main_message: 관찰력이 무기인 조용한 탐정형 🔍
+profile_traits:
+  - 이름: 감성 분석가
+  - 얼굴: 잔잔한 눈매 + 미소 한 줄 🧐
+  - 의상: 톤다운 니트 + 슬랙스
+  - 별명: “다 들켰어요”
+  - 스타일: 차분하지만 날카로운
+character_summary:
+- 말보다 관찰 먼저
+ - 조용히 듣고 판단하는 편
+behavior_summary:
+대화보다 리액션 잘함
+ 필요할 땐 정확히 집어냄
+ai_comment:
+말수 적은데 왜 자꾸 찔리지? 다 알고 있는 느낌임.
+
+
+<참고 예시 #7>
+main_message: 항상 무언가에 감탄 중인 사람
+profile_traits:
+  - 이름: 소소한 감동 수집가 🌼✨
+  - 얼굴: 늘 동그래진 눈 + 😲
+  - 의상: 잔잔한 패턴 셔츠 or 크림톤 니트
+  - 별명: “와… 대박”이 입버릇인 분
+  - 스타일: 잔잔한 리액션, 리스펙 장인
+character_summary:
+- 아무 장면에서나 감동받음
+ - '헉…'을 자주 말함
+ - 남의 말 잘 들어줌
+behavior_summary:
+"헉 저 나뭇잎 너무 귀여워요"
+ "감정의 파도에 오늘도 출렁"
+ai_comment:
+이 사람한테 감동 안 주면 내가 이상한 사람 된 기분…
+
+
+<참고 예시 #8>
+main_message: 묘하게 있어 보이는 척 하지만 정작 아무 생각 없음
+profile_traits:
+  - 이름: 가짜 철학가 🎩📚
+  - 얼굴: 의미심장한 눈빛 + 😐
+  - 의상: 무채색 터틀넥 or 긴 코트
+  - 별명: “나 요즘 생각이 많아”
+  - 스타일: 벽 보고 명상함 / 책 펼치고 안 읽음
+character_summary:
+- 카페 가면 에스프레소 시킴
+ - 근데 한 모금 마시고 그대로 둠
+ - 혼잣말 많이 함
+behavior_summary:
+"그냥… 삶이란 뭘까 생각했어"
+ "에스프레소도 인생 같아, 쓰지?"
+ai_comment:
+철학과는 안 나왔는데 철학과보다 철학과 같음
+
+
+<참고 예시 #9>
+main_message: 어딜 가든 식물 먼저 찾는 사람
+profile_traits:
+  - 이름: 도심 속 자연인 🌿🪴
+  - 얼굴: 촉촉한 눈매 + 🐿️
+  - 의상: 리넨 셔츠 or 에코백
+  - 별명: “선인장도 말 걸어줄 것 같아”
+  - 스타일: 식물 이름 다 외움, 화분 앞에서 멈춤
+character_summary:
+- 친구보다 식물에 먼저 인사함
+ - 늘 생기 있어 보임
+ - 걷다 말고 사진 찍음
+behavior_summary:
+"헉 이거 금전수 아냐?"
+ "이 나무… 너랑 좀 닮았다"
+ai_comment:
+광합성하는 사람을 본다면 그게 이 분입니다
+
+
+<참고 예시 #10>
+main_message: 감정 표현이 서툰 츤데레형 관찰자
+profile_traits:
+  - 이름: 말 없는 애정러 🧊❤️
+  - 얼굴: 시선 회피 + 🙃
+  - 의상: 후드 모자 푹 눌러쓴 느낌
+  - 별명: “그냥… 걱정돼서 그랬어”
+  - 스타일: 말없이 챙겨줌, 질문엔 대답 짧음
+character_summary:
+- 잔소리처럼 말하지만 결국 다 해줌
+ - 먼저 연락은 안 하지만 다 보고 있음
+ - 기념일은 잘 기억함
+behavior_summary:
+"왜 이렇게 늦게 와… 밥은 먹고 다녀"
+ "그거 내가 해놨어"
+ai_comment:
+따뜻한 말은 없지만 말 대신 행동하는 유형
+
+
+<참고 예시 #11>
+main_message: 구름보다 멍 때리는 걸 잘함
+profile_traits:
+  - 이름: 구름 관찰 전문가 ☁️🌀
+  - 얼굴: 멍한 눈빛 + 😶‍🌫️
+  - 의상: 헐렁한 셔츠 + 헐렁한 머리끈
+  - 별명: “아 나 방금 아무 생각 안 했어”
+  - 스타일: 풍경 보다가 갑자기 철학적 질문함
+character_summary:
+- 생각 없어 보이는데 갑자기 깊은 말 함
+ - 놀라운 타이밍에 멍 때림
+ - 잘 까먹고 잘 웃음
+behavior_summary:
+"근데 우리는 왜 살아?"
+ "아 구름 너무 예쁘다"
+ai_comment:
+세상에 휘둘리지 않는 자아가 여기 있음
+---
+
 중요 가이드라인:
 - main_message: 이모지와 함께 추구미를 대표하는 감성적 키워드 (예: "✨잔잔한 도시형 감성✨")
 - one_liner: 유머러스하고 개성 있는 한 줄 캐릭터 소개 (지역명, 특징 활용)
@@ -489,6 +685,79 @@ app.post('/analyze-profile', upload.single('profileImage'), async (req, res) => 
     console.error('Error stack:', error.stack);
     res.status(500).json({ 
       error: '프로필 분석 중 오류가 발생했습니다.',
+      details: error.message 
+    });
+  }
+});
+
+// 배경 이미지 생성 엔드포인트
+app.post('/generate-backgrounds', upload.single('profile'), async (req, res) => {
+  try {
+    console.log('배경 이미지 생성 요청 받음');
+    
+    const { profileAnalysis, chugumiSummary } = req.body;
+    
+    if (!profileAnalysis || !chugumiSummary) {
+      return res.status(400).json({ 
+        error: '프로필 분석 데이터와 추구미 요약이 필요합니다' 
+      });
+    }
+
+    const parsedAnalysis = JSON.parse(profileAnalysis);
+    const basePrompt = `A high-quality photographic background suitable for profile photos, inspired by "${chugumiSummary}" aesthetic. The background should complement a person with the following style: ${parsedAnalysis.current_profile_analysis}. `;
+
+    // 두 가지 스타일의 배경 생성
+    const prompts = [
+      // 실사 느낌 (자연/실외)
+      basePrompt + "Natural outdoor setting with soft warm lighting, gentle shadows, trees, natural elements, photorealistic style, professional photography quality, 4K resolution",
+      
+      // 그림 느낌 (아티스틱/실내)
+      basePrompt + "Artistic painted-style background with warm tones, soft brush strokes, dreamy atmosphere, illustration style mixed with photography, creative artistic mood, warm color palette"
+    ];
+
+    console.log('DALL-E 3 API 호출 시작...');
+    
+    const imagePromises = prompts.map(async (prompt, index) => {
+      try {
+        const response = await openai.images.generate({
+          model: "dall-e-3",
+          prompt: prompt,
+          n: 1,
+          size: "1024x1024",
+          quality: "hd",
+          style: index === 0 ? "natural" : "vivid"
+        });
+        
+        return {
+          url: response.data[0].url,
+          type: index === 0 ? 'realistic' : 'artistic',
+          label: index === 0 ? '🌅실사 느낌' : '🎨그림 느낌'
+        };
+      } catch (error) {
+        console.error(`배경 이미지 ${index + 1} 생성 오류:`, error);
+        return null;
+      }
+    });
+
+    const results = await Promise.all(imagePromises);
+    const successfulImages = results.filter(img => img !== null);
+
+    if (successfulImages.length === 0) {
+      throw new Error('모든 배경 이미지 생성에 실패했습니다');
+    }
+
+    console.log(`${successfulImages.length}개의 배경 이미지 생성 완료`);
+    
+    res.json({ 
+      success: true, 
+      backgrounds: successfulImages,
+      message: `${successfulImages.length}개의 배경 이미지가 생성되었습니다`
+    });
+
+  } catch (error) {
+    console.error('배경 이미지 생성 오류:', error);
+    res.status(500).json({ 
+      error: '배경 이미지 생성 중 오류가 발생했습니다', 
       details: error.message 
     });
   }
