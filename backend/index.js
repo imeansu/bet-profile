@@ -6,12 +6,15 @@ const path = require('path');
 const { OpenAI } = require('openai');
 const fetch = require('node-fetch');
 const { initializeApiKeys } = require('./secrets');
+const { MongoClient } = require('mongodb');
 const logger = require('./logger');
 
 // Global variables for API keys
 let openaiApiKey = null;
 let bflApiKey = null;
 let openai = null;
+let mongoClient = null;
+let runsCollection = null;
 
 const app = express();
 const PORT = 4000;
@@ -30,6 +33,19 @@ async function initializeApp() {
     
     // Initialize OpenAI client
     openai = new OpenAI({ apiKey: openaiApiKey });
+    // Initialize MongoDB
+    const mongoUri = process.env.MONGODB_URI;
+    if (mongoUri) {
+      mongoClient = new MongoClient(mongoUri, { serverSelectionTimeoutMS: 5000 });
+      await mongoClient.connect();
+      const dbName = process.env.MONGODB_DB || 'betprofile';
+      const db = mongoClient.db(dbName);
+      runsCollection = db.collection('prompt_runs');
+      await runsCollection.createIndex({ createdAt: -1 });
+      logger.info('✅ MongoDB connected');
+    } else {
+      logger.info('ℹ️ MONGODB_URI not set. History persistence disabled.');
+    }
     
     // Test OpenAI connection
     logger.info('Testing OpenAI connection...');
@@ -678,6 +694,84 @@ app.post('/edit-image', upload.single('image'), async (req, res) => {
   } catch (err) {
     console.error('Error in /edit-image:', err);
     res.status(500).json({ error: 'AI 이미지 편집 실패', details: err.message });
+  }
+});
+
+// Generic prompt testing endpoint: accepts up to 3 images and a text prompt, returns raw text
+app.post('/test-prompt', upload.array('images', 3), async (req, res) => {
+  try {
+    if (!openai) {
+      return res.status(500).json({ error: 'OpenAI client not initialized' });
+    }
+
+    const userPrompt = (req.body && req.body.prompt) ? String(req.body.prompt) : '';
+    if (!userPrompt && (!req.files || req.files.length === 0)) {
+      return res.status(400).json({ error: 'prompt 또는 images 중 최소 하나는 있어야 합니다.' });
+    }
+
+    const imageContents = (req.files || []).map(file => {
+      const base64Image = file.buffer.toString('base64');
+      const imageDataUrl = `data:${file.mimetype};base64,${base64Image}`;
+      return { type: 'image_url', image_url: { url: imageDataUrl } };
+    });
+
+    const messageContent = [];
+    if (userPrompt) {
+      messageContent.push({ type: 'text', text: userPrompt });
+    }
+    messageContent.push(...imageContents);
+
+    const completion = await openai.chat.completions.create({
+      model: 'gpt-4o',
+      messages: [
+        {
+          role: 'user',
+          content: messageContent
+        }
+      ],
+      max_tokens: 1500
+    });
+
+    const text = completion.choices?.[0]?.message?.content || '';
+    // Persist run if Mongo is available (store prompt, result, and small thumbnails)
+    try {
+      if (runsCollection) {
+        const images = (req.files || []).map(f => ({
+          mimetype: f.mimetype,
+          size: f.size,
+          // store base64 preview up to ~200KB per image to avoid huge docs
+          preview: f.buffer.toString('base64').slice(0, 200000)
+        }));
+        await runsCollection.insertOne({
+          createdAt: new Date(),
+          prompt: userPrompt,
+          resultText: text,
+          images
+        });
+      }
+    } catch (persistErr) {
+      logger.info('Mongo persist skipped/failed:', persistErr.message);
+    }
+    res.json({ text });
+  } catch (err) {
+    console.error('Error in /test-prompt:', err);
+    res.status(500).json({ error: '프롬프트 테스트 실패', details: err.message });
+  }
+});
+
+// Fetch recent runs
+app.get('/admin/runs', async (req, res) => {
+  try {
+    if (!runsCollection) return res.json({ items: [] });
+    const limit = Math.min(parseInt(req.query.limit || '20', 10), 50);
+    const items = await runsCollection
+      .find({}, { projection: { } })
+      .sort({ createdAt: -1 })
+      .limit(limit)
+      .toArray();
+    res.json({ items });
+  } catch (e) {
+    res.status(500).json({ error: 'Failed to fetch runs', details: e.message });
   }
 });
 
